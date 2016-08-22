@@ -1,0 +1,12 @@
+2016-08-22 15:10:21,435- INFO main com.antbrains.mysqltool.PoolManager 数据库连接池加载成功
+2016-08-22 15:11:17,295- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 1000	 write: 988
+2016-08-22 15:12:12,978- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 2000	 write: 1988
+2016-08-22 15:13:13,300- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 3000	 write: 2988
+2016-08-22 15:14:05,782- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 4000	 write: 3988
+2016-08-22 15:14:53,889- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 5000	 write: 4988
+2016-08-22 15:15:18,003- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 6000	 write: 5988
+2016-08-22 15:16:02,336- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 7000	 write: 6988
+2016-08-22 15:16:32,872- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 8000	 write: 7988
+2016-08-22 15:17:16,962- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 9000	 write: 8988
+2016-08-22 15:17:19,417- INFO main com.antbrains.sc.archiver.MysqlArchiver progress: 9191	 write: 9180
+2016-08-22 15:17:19,459- INFO Thread-0 com.antbrains.mysqltool.PoolManager shut down pool

@@ -1,0 +1,12 @@
+2016-08-18 15:35:27,694- INFO main com.antbrains.mysqltool.PoolManager 数据库连接池加载成功
+2016-08-18 15:35:29,134- INFO main com.antbrains.mqtool.HornetQTools queue connection init success, [jnp://ai-dev:1099]
+2016-08-18 15:35:29,472- INFO main com.antbrains.mqtool.HornetQTools destroy done
+2016-08-18 15:35:29,894- INFO Thread-0 com.antbrains.mysqltool.PoolManager shut down pool
+2016-08-18 15:35:59,463- INFO main com.antbrains.mysqltool.PoolManager 数据库连接池加载成功
+2016-08-18 15:36:00,894- INFO main com.antbrains.mqtool.HornetQTools queue connection init success, [jnp://ai-dev:1099]
+2016-08-18 15:36:01,221- INFO main com.antbrains.mqtool.HornetQTools destroy done
+2016-08-18 15:36:01,652- INFO Thread-0 com.antbrains.mysqltool.PoolManager shut down pool
+2016-08-18 15:56:47,586- INFO main com.antbrains.mysqltool.PoolManager 数据库连接池加载成功
+2016-08-18 15:56:48,995- INFO main com.antbrains.mqtool.HornetQTools queue connection init success, [jnp://ai-dev:1099]
+2016-08-18 15:56:49,334- INFO main com.antbrains.mqtool.HornetQTools destroy done
+2016-08-18 15:56:49,758- INFO Thread-0 com.antbrains.mysqltool.PoolManager shut down pool

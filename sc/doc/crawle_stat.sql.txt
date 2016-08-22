@@ -1,0 +1,46 @@
+drop schema if exists crawl_stat;
+CREATE DATABASE crawl_stat /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE crawl_stat;
+
+CREATE TABLE `tasks` (
+  `name` varchar(100) NOT NULL,
+  `dbName` varchar(100) NOT NULL,
+  `confFile` varchar(100) NOT NULL,
+  `startTime` datetime DEFAULT NULL,
+  `endTime` datetime DEFAULT NULL,
+  `addedCount` int NOT NULL DEFAULT '0',
+  `refreshedCount` int NOT NULL DEFAULT '0',
+  `failedCount` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`name`),
+  KEY `dbName` (`dbName`),
+  KEY `confFile` (`confFile`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `task_manager` (
+  `dbName` varchar(100) NOT NULL,
+  `ptnXml` mediumtext,
+  `followRedirect` int DEFAULT '0',
+  `normalizeUrl` int DEFAULT '0',
+  `escapeUrl` int DEFAULT '0',
+  `encoding` varchar(50),
+  `runStatus` int DEFAULT '0',
+  `loopForever` int DEFAULT '0',
+  `loopInterval` bigint,
+  `saveJob` int DEFAULT '0',
+  `curTaskId` varchar(100),
+  `startWebPageId` int DEFAULT '-1',
+  `crawlCountPerSecond` int DEFAULT '5',
+  `taskCount` int DEFAULT '5',
+  `enablePhantomJs` int DEFAULT '0',
+  `dbUser` varchar(100) NOT NULL,
+  `dbPass` varchar(100) NOT NULL,
+  `logLevel` int DEFAULT '3',
+  `startUrl` varchar(1024) NOT NULL,
+  `siteName` varchar(100),
+  `siteTag`  varchar(100),
+  `proxyHost` varchar(100),
+  `proxyPort` int DEFAULT '0',
+  `usePhantomjs` int DEFAULT '0',
+  PRIMARY KEY (`dbName`)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

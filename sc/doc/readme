@@ -1,0 +1,5 @@
+开发步骤
+1. 建立数据库
+   复制commoncrawler.sql.txt 修改数据库名，尤其是url 
+   insert into webpage(url,websiteId,md5) values('http://ws.sj.qq.com/webservices/pullAppCate.do',1,md5('http://ws.sj.qq.com/webservices/pullAppCate.do'));
+2. 参考myapp-crawler   
