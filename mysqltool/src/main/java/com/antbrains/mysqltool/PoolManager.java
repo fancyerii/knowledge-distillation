@@ -137,7 +137,6 @@ public class PoolManager {
 	/**
 	 * 连接池启动
 	 * 
-	 * @throws Exception
 	 */
 	public static synchronized void StartPool(String confDir, String dbName) {
 		addShutdownHook();
@@ -245,44 +244,6 @@ public class PoolManager {
 	public static void freeConnection(String name, Connection con) {
 		freeConnection(con);
 	}
-
-	/**
-	 * 例子 main
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// try {
-		// Connection conn = PoolManager.getConnection("conf", "commoncrawler");
-		// if (conn != null) {
-		// Statement statement = conn.createStatement();
-		// ResultSet rs = statement.executeQuery("select * from website");
-		// int c = rs.getMetaData().getColumnCount();
-		// while (rs.next()) {
-		// System.out.println();
-		// for (int i = 1; i <= c; i++) {
-		// System.out.print(rs.getObject(i) + " ");
-		// }
-		// }
-		// rs.close();
-		// }
-		// PoolManager.freeConnection(conn);
-		// PoolManager.ShutdownPool();
-		// } catch (SQLException e) {
-		// e.printStackTrace();
-		// }
-
-		try {
-			PoolManager.StartPool("jdbc:mysql://kg121:3306/ticmusic?useUnicode=true&characterEncoding=utf-8", "root",
-					"", "org.gjt.mm.mysql.Driver");
-			Connection conn = PoolManager.getConnection();
-
-			PoolManager.freeConnection(conn);
-			PoolManager.ShutdownPool();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
+	
 
 }

@@ -631,14 +631,7 @@ public class HttpClientFetcher implements Closeable {
 
 		return this.doExecuteAndReturnRedirectCode(httpget, responseHandler);
 	}
-
-	/**
-	 * return String[]{content,redirectedUrl};
-	 * 
-	 * @param url
-	 * @return
-	 * @throws Exception
-	 */
+	
 	public String[] httpGetReturnRedirect(final String url) throws Exception {
 		if (!isValid)
 			throw new RuntimeException("not valid now, you should init first");
@@ -998,12 +991,7 @@ public class HttpClientFetcher implements Closeable {
 		return this.doExecute(httpget, responseHandler);
 
 	}
-
-	/**
-	 * close http client
-	 * 
-	 * @throws IOException
-	 */
+	
 	public void close() {
 		isValid = false;
 		if (this.client != null) {
