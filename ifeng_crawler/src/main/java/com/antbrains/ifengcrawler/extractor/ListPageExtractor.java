@@ -131,13 +131,12 @@ public class ListPageExtractor extends IfengBasicInfoExtractor {
 			
 			if(!needContinue) break;
 		}
+		
 		Collections.sort(allItems, new Comparator<ListPageItem>(){
-
 			@Override
 			public int compare(ListPageItem o1, ListPageItem o2) {
 				return o2.getPubTime().compareTo(o1.getPubTime());
-			}
-			
+			}	
 		});
 		for(ListPageItem item:allItems){
 			urls.add(item.getUrl());

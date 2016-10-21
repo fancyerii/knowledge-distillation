@@ -39,7 +39,7 @@ public class DetailPageExtractor extends IfengBasicInfoExtractor {
 
 	@Override
 	public boolean needUpdate(WebPage webPage) {
-		return false;
+		return super.needUpdate(webPage.getLastVisitTime(), 15, 0, 0, 0);
 	}
 
 	@Override
