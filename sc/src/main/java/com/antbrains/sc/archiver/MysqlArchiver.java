@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -835,7 +836,7 @@ public class MysqlArchiver implements Archiver {
 			stmt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
 			stmt.setFetchSize(Integer.MIN_VALUE);
 
-			rs = stmt.executeQuery("select url,depth,content from webpage");
+			rs = stmt.executeQuery("select url,depth,content,lastVisitTime from webpage");
 			Gson gson = new Gson();
 			int i = 0;
 			int total = 0;
@@ -846,7 +847,8 @@ public class MysqlArchiver implements Archiver {
 				}
 				String url = rs.getString(1);
 				int depth=rs.getInt(2);
-				if (!filter.accept(url, depth))
+				Timestamp ts=rs.getTimestamp(3);
+				if (!filter.accept(url, depth, ts))
 					continue;
 				total++;
 				String content = this.readHtml(rs.getBinaryStream(3));
