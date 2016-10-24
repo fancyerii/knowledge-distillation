@@ -934,6 +934,8 @@ MYSQL_USER=ifeng
 MYSQL_PASS=12345
 ```
 
+##### 2.4.4.0 安装
+mvn compile assembly:single
 ##### 2.4.4.1 init.sh
 其实就是调用IfengScheduler把入口url加到hornetq里。这个程序只需要运行一次。而后面的两个脚本如果出现问题，可以重启【这个程序重新运行意味着网站重新刷新一次】
 
