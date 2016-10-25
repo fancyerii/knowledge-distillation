@@ -1,0 +1,11 @@
+log4j.rootCategory=INFO,stdout
+log4j.logger.org.apache.hadoop=WARN
+
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yy-MM-dd HH:mm:ss,SSS} %p %t %C{1} %m%n
+
+log4j.appender.A1=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.A1.File=./logs/crawl.log
+log4j.appender.A1.layout=org.apache.log4j.PatternLayout
+log4j.appender.A1.layout.ConversionPattern=%d- %p %t %C %m%n
