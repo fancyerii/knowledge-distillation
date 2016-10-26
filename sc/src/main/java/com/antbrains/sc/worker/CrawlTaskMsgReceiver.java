@@ -10,6 +10,9 @@ import com.antbrains.mqtool.ActiveMqTools;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqReceiver;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.sc.archiver.Archiver;
+import com.antbrains.sc.archiver.Constants;
+import com.antbrains.sc.archiver.MysqlArchiver;
 import com.antbrains.sc.data.CrawlTask;
 import com.antbrains.sc.tools.StopableWorker;
 import com.google.gson.Gson;
@@ -19,8 +22,8 @@ public class CrawlTaskMsgReceiver extends StopableWorker implements Runnable {
 	private MqToolsInterface mqtools;
 	private MqReceiver receiver;
 	private BlockingQueue<CrawlTask> queue;
-
-	public CrawlTaskMsgReceiver(String conAddr, String jmxUrl, String queueName, BlockingQueue<CrawlTask> queue) {
+	MysqlArchiver archiver;
+	public CrawlTaskMsgReceiver(MysqlArchiver archiver, String conAddr, String jmxUrl, String queueName, BlockingQueue<CrawlTask> queue) {
 		mqtools = new HornetQTools(conAddr, jmxUrl);
 		if (!mqtools.init()) {
 			throw new IllegalArgumentException("can't init mqtools: " + conAddr + "\t" + jmxUrl);
@@ -32,6 +35,7 @@ public class CrawlTaskMsgReceiver extends StopableWorker implements Runnable {
 		}
 
 		this.queue = queue;
+		this.archiver=archiver;
 	}
 
 	public void close() {
@@ -50,12 +54,25 @@ public class CrawlTaskMsgReceiver extends StopableWorker implements Runnable {
 			}
 		}
 	}
+	
+	private long lastUpdate=-1;
+	private void updateStatus(){
+		if(System.currentTimeMillis()-lastUpdate>Constants.UPDATE_COMPONENT_STATUS_INTERVAL){
+			if(this.queue.size()>0){
+				this.archiver.updateComponentStatus(Constants.COMPONENT_MSGRECV, Constants.STATUS_HASTASK);
+			}else{
+				this.archiver.updateComponentStatus(Constants.COMPONENT_MSGRECV, Constants.STATUS_NOTASK);
+			}
+			lastUpdate=System.currentTimeMillis();
+		}
+	}
 
 	@Override
 	public void run() {
 		Gson gson = new Gson();
 		while (!bStop) {
 			try {
+				this.updateStatus();
 				TextMessage tm = (TextMessage) receiver.receive(5000);
 				if (tm == null)
 					continue;

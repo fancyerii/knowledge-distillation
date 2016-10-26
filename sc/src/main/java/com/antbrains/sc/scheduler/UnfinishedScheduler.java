@@ -24,6 +24,7 @@ import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
 import com.antbrains.mysqltool.DBUtils;
 import com.antbrains.mysqltool.PoolManager;
+import com.antbrains.sc.archiver.Constants;
 import com.antbrains.sc.archiver.MysqlArchiver;
 import com.antbrains.sc.data.CrawlTask;
 import com.antbrains.sc.tools.GlobalConstants;
@@ -93,9 +94,10 @@ public class UnfinishedScheduler extends StopableWorker {
 	private int batchSize = DEFAULT_BATCH_SIZE;
 	private int maxEmptyCount = DEFAULT_MAX_EMPTY_COUNT;
 	private int maxFailCount = DEFAULT_MAX_FAIL_COUNT;
-
+	
 	private String dbName;
 
+	private MysqlArchiver mysqlArchiver=new MysqlArchiver();
 	public UnfinishedScheduler(String amqConnStr, int maxQueueSize, int batchSize, int maxEmptyCount, String dbName,
 			int maxFailCount) {
 		logger.info("amqConnStr: " + amqConnStr);
@@ -119,7 +121,8 @@ public class UnfinishedScheduler extends StopableWorker {
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + amqConnStr);
 		}
-
+		
+		PoolManager.StartPool("conf", dbName);
 	}
 
 	public void close() {
@@ -202,28 +205,43 @@ public class UnfinishedScheduler extends StopableWorker {
 		}
 	}
 
+	private long lastUpdate=-1;
+	private void updateStatus(){
+		if(System.currentTimeMillis()-lastUpdate>Constants.UPDATE_COMPONENT_STATUS_INTERVAL){
+			if(this.hasTask){
+				this.mysqlArchiver.updateComponentStatus(Constants.COMPONENT_SCHEDULER, Constants.STATUS_HASTASK);
+			}else{
+				this.mysqlArchiver.updateComponentStatus(Constants.COMPONENT_SCHEDULER, Constants.STATUS_NOTASK);
+			}
+			lastUpdate=System.currentTimeMillis();
+		}
+	}
+	private boolean hasTask=true;
 	public void doSchedule() {
 		int emptyCount = 0;
 		Gson gson = new Gson();
 		PoolManager.StartPool("conf", dbName);
 		while (!bStop) {
+			this.updateStatus();
 			// get queue size
 			long queueSize = sender.getQueueSize();
 			if (queueSize >= maxQueueSize) {
 				try {
 					Thread.sleep(30000);
 				} catch (InterruptedException e) {
-
+					
 				}
+				hasTask=true;
 				continue;
 			}
 
 			List<CrawlTask> tasks = getTasks(batchSize);
+			hasTask=!tasks.isEmpty();
 			if (tasks.size() == 0) {
 				emptyCount++;
 				if (emptyCount >= maxEmptyCount) {
 					logger.info("no tasks");
-					bStop = true;
+					//bStop = true;
 					break;
 				}
 				try {

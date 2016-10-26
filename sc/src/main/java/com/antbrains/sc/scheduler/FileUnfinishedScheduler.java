@@ -34,6 +34,9 @@ import com.antbrains.mqtool.ActiveMqTools;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mysqltool.PoolManager;
+import com.antbrains.sc.archiver.Constants;
+import com.antbrains.sc.archiver.MysqlArchiver;
 import com.antbrains.sc.data.CrawlTask;
 import com.antbrains.sc.tools.ByteArrayWrapper;
 import com.antbrains.sc.tools.GlobalConstants;
@@ -96,6 +99,7 @@ public class FileUnfinishedScheduler extends StopableWorker {
 
 	private MqToolsInterface mqtools;
 	private MqSender sender;
+	private MysqlArchiver mysqlArchiver;
 	private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
 	private int batchSize = DEFAULT_BATCH_SIZE;
 	private int maxEmptyCount = DEFAULT_MAX_EMPTY_COUNT;
@@ -146,7 +150,8 @@ public class FileUnfinishedScheduler extends StopableWorker {
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + conAddr + "\t" + jmxUrl);
 		}
-
+		PoolManager.StartPool("conf", dbName);
+		mysqlArchiver=new MysqlArchiver();
 	}
 
 	public void close() {
@@ -165,6 +170,15 @@ public class FileUnfinishedScheduler extends StopableWorker {
 			}
 		}
 		this.manager.shutdown();
+	}
+	
+	private boolean hasTask(){
+		for (File f : this.dir.listFiles()) {
+			if (f.getName().endsWith(".txt")||f.getName().endsWith(".txt.bak")) {
+				if(f.length()>0) return true;
+			}
+		}
+		return false;
 	}
 
 	private String getAFile() {
@@ -257,11 +271,24 @@ public class FileUnfinishedScheduler extends StopableWorker {
 			this.currFile = null;
 		}
 	}
+	
+	private long lastUpdate=-1;
+	private void updateStatus(){
+		if(System.currentTimeMillis()-lastUpdate>Constants.UPDATE_COMPONENT_STATUS_INTERVAL){
+			if(this.hasTask()){
+				this.mysqlArchiver.updateComponentStatus(Constants.COMPONENT_SCHEDULER, Constants.STATUS_HASTASK);
+			}else{
+				this.mysqlArchiver.updateComponentStatus(Constants.COMPONENT_SCHEDULER, Constants.STATUS_NOTASK);
+			}
+			lastUpdate=System.currentTimeMillis();
+		}
+	}
 
 	public void doSchedule() {
 		int emptyCount = 0;
 		Gson gson = new Gson();
 		while (!bStop) {
+			this.updateStatus();
 			// get queue size
 			long queueSize = sender.getQueueSize();
 			if (queueSize == -1) {

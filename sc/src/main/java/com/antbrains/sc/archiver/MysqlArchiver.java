@@ -33,6 +33,7 @@ import com.antbrains.mysqltool.PoolManager;
 import com.antbrains.sc.data.Block;
 import com.antbrains.sc.data.Link;
 import com.antbrains.sc.data.WebPage;
+import com.antbrains.sc.tools.HostNameTools;
 import com.google.gson.Gson;
 
 public class MysqlArchiver implements Archiver {
@@ -865,6 +866,66 @@ public class MysqlArchiver implements Archiver {
 				bw.close();
 			}
 			DBUtils.closeAll(conn, stmt, rs);
+		}
+	}
+	
+	public void clearComponentStatus(){
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try {
+			conn = PoolManager.getConnection();
+			pstmt = conn.prepareStatement("delete from component_status");
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			DBUtils.closeAll(conn, pstmt, null);
+		}
+	}
+	
+	public Map<String,StatusAndUpdate> getComponentStatus(){
+		Map<String,StatusAndUpdate> result=new HashMap<>();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs=null;
+		try {
+			conn = PoolManager.getConnection();
+			pstmt = conn.prepareStatement("select * from component_status");
+			rs=pstmt.executeQuery();
+			while(rs.next()){
+				String key=rs.getString("host_name_port");
+				String status=rs.getString("status");
+				Date d=new Date(rs.getTimestamp("last_update").getTime());
+				result.put(key, new StatusAndUpdate(status, d));
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			DBUtils.closeAll(conn, pstmt, rs);
+		}
+		
+		return result;
+	}
+	
+	public void updateComponentStatus(String key, String status) {
+		String realKey=HostNameTools.getHostName()+"\t"+HostNameTools.getProcessId()+"\t"+key;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try {
+			conn = PoolManager.getConnection();
+			pstmt = conn.prepareStatement(
+					"insert into component_status(host_name_port, status, last_update) values(?,?,now())"
+					+"on duplicate key update status=?, last_update=now()");
+			pstmt.setString(1, realKey);
+			pstmt.setString(2, status);
+			pstmt.setString(3, status);
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			DBUtils.closeAll(conn, pstmt, null);
 		}
 	}
 }

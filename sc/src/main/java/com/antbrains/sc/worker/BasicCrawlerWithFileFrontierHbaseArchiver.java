@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.jgroups.util.UUID;
 
 import com.antbrains.httpclientfetcher.HttpClientFetcher;
+import com.antbrains.mysqltool.PoolManager;
 import com.antbrains.sc.archiver.Archiver;
 import com.antbrains.sc.archiver.HbaseArchiver;
 import com.antbrains.sc.archiver.MysqlArchiver;
@@ -157,12 +158,13 @@ public class BasicCrawlerWithFileFrontierHbaseArchiver extends StopableWorker {
 		fetcher.setMaxConnectionPerRoute(workerNum * 2);
 		fetcher.setMaxTotalConnection(workerNum * 2);
 		fetcher.init();
-
-		msgReceiver = new CrawlTaskMsgReceiver(conAddr, jmxUrl, queueName, tasks);
-		new Thread(msgReceiver).start();
-		frontier = new FileFrontier(frontierDir, 10_000, 60_000);
 		archiver = new HbaseArchiver(queueName, updateQueueSize, failedQueueSize, blockQueueSize, zk, updateWebThread,
 				saveFailThread, saveBlockThread, updateCacheSize, flushInterval);
+		PoolManager.StartPool("conf", queueName);
+		msgReceiver = new CrawlTaskMsgReceiver(new MysqlArchiver(), conAddr, jmxUrl, queueName, tasks);
+		new Thread(msgReceiver).start();
+		frontier = new FileFrontier(frontierDir, 10_000, 60_000);
+
 		for (int i = 0; i < workers.length; i++) {
 			workers[i] = new FetcherAndExtractor4Hbase(tasks, extractor, fetcher, frontier, archiver, taskId);
 		}

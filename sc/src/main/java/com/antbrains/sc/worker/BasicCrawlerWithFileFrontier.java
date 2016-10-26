@@ -242,11 +242,12 @@ public class BasicCrawlerWithFileFrontier extends StopableWorker {
 			fetcher.setRoutePlanner(routePlanner);
 		}
 		fetcher.init();
-
-		msgReceiver = new CrawlTaskMsgReceiver(conAddr, jmxUrl, queueName, tasks);
+		
+		MysqlArchiver archiver = new MysqlArchiver();
+		msgReceiver = new CrawlTaskMsgReceiver(archiver, conAddr, jmxUrl, queueName, tasks);
 		new Thread(msgReceiver).start();
 		frontier = new FileFrontier(frontierDir, 10_000, 60_000);
-		Archiver archiver = new MysqlArchiver();
+		
 		for (int i = 0; i < workers.length; i++) {
 			workers[i] = new FetcherAndExtractor(tasks, extractor, fetcher, frontier, archiver, taskId, isUpdate);
 		}

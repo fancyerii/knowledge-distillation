@@ -115,11 +115,11 @@ public class BasicCrawler extends StopableWorker {
 		fetcher.setMaxConnectionPerRoute(workerNum * 2);
 		fetcher.setMaxTotalConnection(workerNum * 2);
 		fetcher.init();
-
-		msgReceiver = new CrawlTaskMsgReceiver(conAddr, jmxUrl, queueName, tasks);
+		MysqlArchiver archiver = new MysqlArchiver();
+		msgReceiver = new CrawlTaskMsgReceiver(archiver, conAddr, jmxUrl, queueName, tasks);
 		new Thread(msgReceiver).start();
 		Frontier frontier = new MysqlFrontier();
-		Archiver archiver = new MysqlArchiver();
+		
 		for (int i = 0; i < workers.length; i++) {
 			workers[i] = new FetcherAndExtractor(tasks, extractor, fetcher, frontier, archiver, taskId, isUpdate);
 		}

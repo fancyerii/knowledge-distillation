@@ -76,5 +76,6 @@ public class NullArchiver implements Archiver {
 	public void updateFinishTime(WebPage webPage, Date date) {
 
 	}
+	
 
 }

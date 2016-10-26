@@ -1,12 +1,14 @@
 package com.antbrains.urlcrawler.crawler;
 
+import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
 import com.antbrains.httpclientfetcher.HttpClientFetcher;
-import com.antbrains.urlcrawler.db.CrawlTask; 
+import com.antbrains.urlcrawler.db.CrawlTask;
+import com.google.gson.Gson; 
 
 public class Fetcher extends Thread{
 	protected static Logger logger=Logger.getLogger(Fetcher.class);
@@ -46,7 +48,7 @@ public class Fetcher extends Thread{
 		}
 		return null;
 	}
-	
+	private Gson gson=new Gson();
 	private void doWork(CrawlTask task){
 		String html=getHtml(task.url);
 		if(html==null){
@@ -56,7 +58,9 @@ public class Fetcher extends Thread{
 			task.failReason=CrawlTask.FAIL_REASON_NETWORK;
 		}else{
 			task.status=CrawlTask.STATUS_SUCC;
-			task.otherInfo=html;
+			HashMap<String,String> map=new HashMap<>(1);
+			map.put("html", html);
+			task.otherInfo=gson.toJson(map);
 		}
 		try {
 			this.resultQueue.put(task);

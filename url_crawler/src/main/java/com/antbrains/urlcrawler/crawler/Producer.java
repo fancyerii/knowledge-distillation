@@ -89,7 +89,7 @@ public class Producer extends Thread{
 		boolean first=true;
 		Gson gson=new Gson();
 		while(!bStop){
-			long queueSize=sender.getQueueSize();
+			long queueSize=this.mqtools.getQueueSize(dbName);
 			logger.info("queue: "+queueSize);
 			if(queueSize<0){
 				logger.warn("queueSize: "+queueSize);

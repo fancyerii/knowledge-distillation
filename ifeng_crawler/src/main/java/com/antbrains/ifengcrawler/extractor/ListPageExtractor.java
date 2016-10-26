@@ -30,7 +30,7 @@ import com.antbrains.sc.tools.batchcrawler.CrawlPageInterface;
 
 public class ListPageExtractor extends IfengBasicInfoExtractor {
 	protected static Logger logger = Logger.getLogger(ListPageExtractor.class);
-	public static int maxPage=500;
+	public static int maxPage=1000;
 	public static String pubTimeBound="2015-01-01";
 	public static int maxCrawlThread=3;
 	

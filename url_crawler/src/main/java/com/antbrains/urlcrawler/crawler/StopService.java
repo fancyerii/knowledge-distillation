@@ -36,7 +36,7 @@ public class StopService extends Thread {
 				OutputStream sout = socket.getOutputStream();
 				BufferedWriter outputWriter = new BufferedWriter(new OutputStreamWriter(sout, "UTF8"));
 				String cmd = inputReader.readLine();
-				if (cmd.equals("stop")) {
+				if ("stop".equals(cmd)) {
 					if (stoppable != null) {
 						stoppable.stopMe();
 						stoppable.waitFinish(waitTime);

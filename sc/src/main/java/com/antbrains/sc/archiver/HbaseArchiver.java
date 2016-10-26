@@ -202,7 +202,6 @@ public class HbaseArchiver implements Archiver {
 		webPage.setLastFinishTime(date);
 		this.updateWebPage(webPage);
 	}
-
 }
 
 class SaveBlockThread extends AbstractWorkerThread<BlockInfo> {

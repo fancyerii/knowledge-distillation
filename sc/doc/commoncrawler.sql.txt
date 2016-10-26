@@ -189,6 +189,13 @@ CREATE TABLE `cmt_content` (
 	KEY `md5` (`md5`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 	
+	CREATE TABLE `component_status` ( 
+    `host_name_port` varchar(255) NOT NULL,
+	`status` varchar(255) NOT NULL, 
+	`last_update` datetime DEFAULT NULL,
+	 PRIMARY KEY (`host_name_port`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	
 
 insert into website(siteName,tags) values('应用宝','app');
 ALTER TABLE webpage AUTO_INCREMENT = 1;

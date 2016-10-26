@@ -4,7 +4,7 @@
 	<groupId>com.github.fancyerii</groupId>
 	<artifactId>ifeng_crawler</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.0.1</version>
 	<name>ifeng_crawler</name>
 	<description>ifeng crawler</description>
 
@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>com.github.fancyerii</groupId>
 			<artifactId>sc</artifactId>
-			<version>1.0</version>
+			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

@@ -38,4 +38,5 @@ public interface Archiver {
 	public void close();
 
 	public void process404Url(String url);
+	
 }
