@@ -93,8 +93,16 @@ public abstract class UrlPatternExtractor {
 		// 就能避免一个节点因为两条路径重复抓取
 		if (webPage.getLastVisitTime() != null && webPage.getLastVisitTime().getTime() >= this.startDate.getTime()) {
 			logger.warn("LastVisitTime >= startTime: " + webPage.getUrl());
-
-			return;
+			if(webPage.getDepth()==0){
+				logger.info("still proceeding: "+webPage.getDepth());
+				this.startDate=new Date();
+				logger.info("set startDate: "+this.startDate.toString());
+				WebPage specialPage=new WebPage();
+				
+				frontier.addWebPage(specialPage, 0);
+			}else{
+				return;
+			}
 		}
 
 		boolean badUrl = false;

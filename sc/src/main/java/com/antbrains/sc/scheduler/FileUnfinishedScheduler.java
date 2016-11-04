@@ -146,7 +146,7 @@ public class FileUnfinishedScheduler extends StopableWorker {
 		if (!mqtools.init()) {
 			throw new IllegalArgumentException("can't connect to: " + conAddr + "\t" + jmxUrl);
 		}
-		sender = mqtools.getMqSender(dbName, Session.SESSION_TRANSACTED, true);
+		sender = mqtools.getMqSender(dbName, Session.AUTO_ACKNOWLEDGE);
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + conAddr + "\t" + jmxUrl);
 		}
@@ -222,8 +222,15 @@ public class FileUnfinishedScheduler extends StopableWorker {
 			String line;
 			while ((line = br.readLine()) != null) {
 				CrawlTask ct = gson.fromJson(line, CrawlTask.class);
+				if(ct.url==null){
+					logger.info("clear cache for null url: "+line);
+					logger.info("before clear: "+cache.getSize());
+					cache.removeAll();
+					logger.info("after clear: "+cache.getSize());
+					continue;
+				}
 				String url = ct.url;
-				if (url == null || url.equals("")) {
+				if (url.equals("")) {
 					logger.warn("invalid: " + url);
 					continue;
 				}
@@ -326,19 +333,19 @@ public class FileUnfinishedScheduler extends StopableWorker {
 				String s = gson.toJson(task);
 				this.sender.send(s);
 				count++;
-				if (count % 10_000 == 0)
-					try {
-						sender.commit();
-					} catch (JMSException e) {
-						logger.error(e.getMessage(), e);
-					}
+//				if (count % 10_000 == 0)
+//					try {
+//						sender.commit();
+//					} catch (JMSException e) {
+//						logger.error(e.getMessage(), e);
+//					}
 				// logger.info("send: "+task.url+"\t"+task.depth);
 			}
-			try {
-				sender.commit();
-			} catch (JMSException e) {
-				logger.error(e.getMessage(), e);
-			}
+//			try {
+//				sender.commit();
+//			} catch (JMSException e) {
+//				logger.error(e.getMessage(), e);
+//			}
 			deleteTasks();
 			logger.info("sent: " + count);
 		}

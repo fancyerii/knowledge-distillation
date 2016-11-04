@@ -1,0 +1,14 @@
+一个网页保护如下字段
+md5 url的md5 pk
+url 
+host
+title 标题
+content 正文
+pubTime 发布时间
+tags 标签（多值）
+source 来源网站
+types 类型（新闻，图片，专题，。。。）
+authors 作者/编辑
+comments 评论数量
+main-image 主图url
+images 所有图片

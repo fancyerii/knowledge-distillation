@@ -120,7 +120,7 @@ public class UnfinishedScheduler2 extends StopableWorker {
 		if (!mqtools.init()) {
 			throw new IllegalArgumentException("can't connect to: " + conAddr + "\t" + jmxUrl);
 		}
-		sender = mqtools.getMqSender(dbName, Session.SESSION_TRANSACTED, true);
+		sender = mqtools.getMqSender(dbName, Session.AUTO_ACKNOWLEDGE);
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + conAddr + "\t" + jmxUrl);
 		}

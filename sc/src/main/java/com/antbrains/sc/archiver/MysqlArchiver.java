@@ -848,7 +848,7 @@ public class MysqlArchiver implements Archiver {
 				}
 				String url = rs.getString(1);
 				int depth=rs.getInt(2);
-				Timestamp ts=rs.getTimestamp(3);
+				Timestamp ts=rs.getTimestamp(4);
 				if (!filter.accept(url, depth, ts))
 					continue;
 				total++;

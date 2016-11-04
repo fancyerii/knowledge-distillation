@@ -18,6 +18,10 @@ public class MysqlFrontier implements Frontier {
 
 	@Override
 	public void addWebPage(WebPage webPage, int failCountInc) {
+		if(webPage.getUrl()==null) {
+			logger.info("skip null");
+			return;
+		}
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		try {

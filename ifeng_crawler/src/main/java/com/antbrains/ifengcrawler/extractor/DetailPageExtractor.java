@@ -22,13 +22,13 @@ public class DetailPageExtractor extends IfengBasicInfoExtractor {
 	@Override
 	public void extractProps(WebPage webPage, NekoHtmlParser parser, HttpClientFetcher fetcher, String content,
 			Archiver archiver, String taskId) {
-		String title=parser.getNodeText("//H1");
-		Map<String, String> attrs = webPage.getAttrs();
-		if(attrs==null){
-			attrs = new HashMap<>();
-			webPage.setAttrs(attrs);
-		}
-		attrs.put("#title#", title);
+//		String title=parser.getNodeText("//H1");
+//		Map<String, String> attrs = webPage.getAttrs();
+//		if(attrs==null){
+//			attrs = new HashMap<>();
+//			webPage.setAttrs(attrs);
+//		}
+//		attrs.put("#title#", title);
 	}
 
 	@Override

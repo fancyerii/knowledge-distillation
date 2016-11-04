@@ -48,7 +48,7 @@ public class Producer extends Thread{
 		if (!mqtools.init()) {
 			throw new IllegalArgumentException("can't connect to: " + conAddr + "\t" + jmxUrl);
 		}
-		sender = mqtools.getMqSender(dbName, Session.SESSION_TRANSACTED, true);
+		sender = mqtools.getMqSender(dbName, Session.AUTO_ACKNOWLEDGE);
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + conAddr + "\t" + jmxUrl);
 		}
@@ -178,8 +178,7 @@ public class Producer extends Thread{
 						//CrawlTask copyTask=task.copy();
 						//copyTask.status=CrawlTask.STATUS_CRAWLING;
 						//updatedTasks.add(copyTask);
-					}
-					sender.commit();
+					} 
 					//PhoenixTool.upsertTasks(conn, updatedTasks); 
 					List<String> urls=this.getUrls(tasks);
 

@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.Session;
 
 import org.apache.log4j.Logger;
 
@@ -33,14 +36,41 @@ public class MysqlInit {
 	private MqSender sender;
 	MysqlArchiver archiver;
 	private long initMinInterval;
-	private static final long NO_TASK_INTERVAL=30*60_000;
+	private long noTaskInterval;
+	
+	public static long parseInterval(String s){
+		try{
+			return Long.valueOf(s);
+		}catch(Exception e){}
+		try{
+			String v=s.substring(0, s.length()-1);
+			long res=Long.valueOf(v);
+			String lastChar=s.substring(s.length()-1);
+			if(lastChar.equalsIgnoreCase("s")){
+				return res*1000;
+			}else if(lastChar.equalsIgnoreCase("m")){
+				return res*1000*60;
+			}else if(lastChar.equalsIgnoreCase("h")){
+				return res*1000*3600;
+			}else if(lastChar.equalsIgnoreCase("d")){
+				return res*1000*24*3600;
+			}
+		}catch(Exception e){
+			
+		}
+		throw new IllegalArgumentException(s);
+	}
 	public MysqlInit(String[] args) throws Exception{
-		initMinInterval=Integer.valueOf(args[3]);
+		initMinInterval=this.parseInterval(args[3]);
+		noTaskInterval=this.parseInterval(args[4]);
+		logger.info("initMinInterval: "+initMinInterval);
+		logger.info("noTaskInterval: "+noTaskInterval);
+		
 		mqtools = new HornetQTools(args[0], args[1]);
 		if (!mqtools.init()) {
 			throw new IllegalArgumentException("can't connect to: " + args[0]);
 		}
-		sender = mqtools.getMqSender(args[2], ActiveMqSender.PERSISTENT);
+		sender = mqtools.getMqSender(args[2], Session.AUTO_ACKNOWLEDGE);
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + args[1]);
 		}
@@ -121,12 +151,12 @@ public class MysqlInit {
 				if(this.allFinish(status)){
 					if(firstAllFinishTime==-1){
 						firstAllFinishTime=System.currentTimeMillis();
-						logger.info("firstAllFinishTime: "+firstAllFinishTime);
+						logger.info("firstAllFinishTime: "+sdf.format(new Date(firstAllFinishTime)));
 					}
 				}else{
 					firstAllFinishTime=-1;
 				}
-				if(firstAllFinishTime!=-1 && System.currentTimeMillis()-firstAllFinishTime>NO_TASK_INTERVAL){
+				if(firstAllFinishTime!=-1 && System.currentTimeMillis()-firstAllFinishTime>noTaskInterval){
 					logger.info("ok to init: "+sdf.format(new Date(this.firstAllFinishTime)));
 					if(System.currentTimeMillis()-this.lastInitTime>this.initMinInterval){
 						this.doInit();
@@ -163,8 +193,8 @@ public class MysqlInit {
 	}
 	public static void main(String[] args) throws Exception {
 		// put first page to queue
-		if (args.length != 4) {
-			logger.error("need 3 args conAddress jmxUrl dbName initInterval");
+		if (args.length != 5) {
+			logger.error("need 5 args conAddress jmxUrl dbName initInterval noTaskInterval");
 			System.exit(-1);
 		}
 		PoolManager.StartPool("conf", args[2]);

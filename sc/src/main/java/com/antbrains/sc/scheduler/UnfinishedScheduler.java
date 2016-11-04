@@ -11,6 +11,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.Session;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -117,7 +119,7 @@ public class UnfinishedScheduler extends StopableWorker {
 		if (!mqtools.init()) {
 			throw new IllegalArgumentException("can't connect to: " + amqConnStr);
 		}
-		sender = mqtools.getMqSender(dbName, ActiveMqSender.PERSISTENT);
+		sender = mqtools.getMqSender(dbName, Session.AUTO_ACKNOWLEDGE);
 		if (!sender.init(ActiveMqSender.PERSISTENT)) {
 			throw new IllegalArgumentException("can't getMqSender: " + amqConnStr);
 		}
