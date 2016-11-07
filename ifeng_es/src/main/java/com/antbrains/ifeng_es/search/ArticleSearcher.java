@@ -78,7 +78,7 @@ public class ArticleSearcher {
 			item.setContentHightlight(this.highlightConent(content, words, startTag, endTag));
 			sr.getItems().add(item);
 		}
-		
+		sr.setTotalResult(searchResponse.getHits().totalHits());
 		return sr;
 	}
 	

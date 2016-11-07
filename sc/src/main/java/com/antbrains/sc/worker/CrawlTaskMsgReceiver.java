@@ -10,6 +10,7 @@ import com.antbrains.mqtool.ActiveMqTools;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqReceiver;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mqtool.QueueTools;
 import com.antbrains.sc.archiver.Archiver;
 import com.antbrains.sc.archiver.Constants;
 import com.antbrains.sc.archiver.MysqlArchiver;
@@ -69,18 +70,17 @@ public class CrawlTaskMsgReceiver extends StopableWorker implements Runnable {
 
 	@Override
 	public void run() {
-		Gson gson = new Gson();
+		Gson gson = new Gson(); 
 		while (!bStop) {
 			try {
 				this.updateStatus();
-				TextMessage tm = (TextMessage) receiver.receive(5000);
-				if (tm == null)
-					continue;
-				String s = tm.getText();
+				String s=QueueTools.receive(receiver, 5000);
+				if(s==null) continue;
 				CrawlTask ct = gson.fromJson(s, CrawlTask.class);
 				queue.put(ct);
 			} catch (Exception e) {
 				logger.error(e.getMessage());
+				return;
 			}
 		}
 

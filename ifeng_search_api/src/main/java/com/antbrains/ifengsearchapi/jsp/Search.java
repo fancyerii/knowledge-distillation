@@ -39,6 +39,8 @@ public class Search {
 			sb.append("<a href='"+url+"'>下一页</a> &nbsp;&nbsp;&nbsp;");
 		}
 		
+		sb.append("共 "+sr.getTotalResult()+" 条结果");
+		
 		return sb.toString();
 	}
 }

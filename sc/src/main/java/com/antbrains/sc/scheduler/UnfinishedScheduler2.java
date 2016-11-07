@@ -25,6 +25,7 @@ import com.antbrains.mqtool.ActiveMqTools;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mqtool.QueueTools;
 import com.antbrains.mysqltool.DBUtils;
 import com.antbrains.mysqltool.PoolManager;
 import com.antbrains.sc.archiver.Constants;
@@ -255,9 +256,13 @@ public class UnfinishedScheduler2 extends StopableWorker {
 				emptyCount = 0;
 			}
 			for (CrawlTask task : tasks) {
-				String s = gson.toJson(task);
-				this.sender.send(s);
-				logger.info("send: " + task.url + "\t" + task.depth);
+				String s=gson.toJson(task);
+				boolean res=QueueTools.send(sender, s);
+				if(!res){
+					logger.error("can't send msg: "+s);
+					return;
+				}
+				logger.debug("send: " + task.url + "\t" + task.depth);
 			}
 
 			// TODO uncomment after DEBUG

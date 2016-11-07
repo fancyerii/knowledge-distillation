@@ -13,6 +13,7 @@ import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqReceiver;
 import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mqtool.QueueTools;
 import com.antbrains.urlcrawler.db.CrawlTask;
 import com.google.gson.Gson;
 
@@ -44,14 +45,13 @@ public class TaskReceiver extends Thread{
 		Gson gson=new Gson();
 		while(!bStop){
 			try{
-				TextMessage tm = (TextMessage) receiver.receive(5000);
-				if (tm == null)
-					continue;
-				String s = tm.getText();
+				String s = QueueTools.receive(receiver, 5000);
+				if(s==null) continue;
 				CrawlTask ct = gson.fromJson(s, CrawlTask.class);
 				this.taskQueue.put(ct);
 			}catch(Exception e){
 				logger.error(e.getMessage(),e);
+				return;
 			}
 		}
 		logger.info("stop");

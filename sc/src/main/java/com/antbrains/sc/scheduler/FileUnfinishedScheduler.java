@@ -34,6 +34,7 @@ import com.antbrains.mqtool.ActiveMqTools;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mqtool.QueueTools;
 import com.antbrains.mysqltool.PoolManager;
 import com.antbrains.sc.archiver.Constants;
 import com.antbrains.sc.archiver.MysqlArchiver;
@@ -330,8 +331,12 @@ public class FileUnfinishedScheduler extends StopableWorker {
 			}
 			int count = 0;
 			for (CrawlTask task : tasks) {
-				String s = gson.toJson(task);
-				this.sender.send(s);
+				String s = gson.toJson(task); 
+				boolean res=QueueTools.send(sender, s);
+				if(!res){
+					logger.error("can't send msg: "+s);
+					return;
+				}
 				count++;
 //				if (count % 10_000 == 0)
 //					try {
@@ -339,7 +344,7 @@ public class FileUnfinishedScheduler extends StopableWorker {
 //					} catch (JMSException e) {
 //						logger.error(e.getMessage(), e);
 //					}
-				// logger.info("send: "+task.url+"\t"+task.depth);
+				logger.debug("send: "+task.url+"\t"+task.depth);
 			}
 //			try {
 //				sender.commit();

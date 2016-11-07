@@ -22,6 +22,7 @@ import com.antbrains.mqtool.ActiveMqTools;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mqtool.QueueTools;
 import com.antbrains.mysqltool.PoolManager;
 import com.antbrains.sc.archiver.Constants;
 import com.antbrains.sc.archiver.MysqlArchiver;
@@ -188,8 +189,10 @@ public class MysqlInit {
 		String s = gson.toJson(ct);
 
 
-		sender.send(s);
-		
+		boolean succ=QueueTools.send(sender, s, 60, 60_000);
+		if(!succ){
+			
+		}
 	}
 	public static void main(String[] args) throws Exception {
 		// put first page to queue

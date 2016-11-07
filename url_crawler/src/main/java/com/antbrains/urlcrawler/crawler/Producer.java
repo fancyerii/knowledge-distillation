@@ -19,6 +19,7 @@ import com.antbrains.mqtool.ActiveMqSender;
 import com.antbrains.mqtool.HornetQTools;
 import com.antbrains.mqtool.MqSender;
 import com.antbrains.mqtool.MqToolsInterface;
+import com.antbrains.mqtool.QueueTools;
 import com.antbrains.urlcrawler.db.CrawlTask;
 import com.antbrains.urlcrawler.db.HbaseTool;
 import com.google.gson.Gson; 
@@ -173,7 +174,12 @@ public class Producer extends Thread{
 					this.failCount=0;
 					//ArrayList<CrawlTask> updatedTasks=new ArrayList<>();
 					for(CrawlTask task:tasks){
-						sender.send(gson.toJson(task));
+						String s=gson.toJson(task);
+						boolean res=QueueTools.send(sender, s);
+						if(!res){
+							logger.error("can't send msg: "+s);
+							return;
+						}
 						//this.taskQueue.put(task);
 						//CrawlTask copyTask=task.copy();
 						//copyTask.status=CrawlTask.STATUS_CRAWLING;
