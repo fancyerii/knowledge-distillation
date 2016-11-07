@@ -824,6 +824,50 @@ public class MysqlArchiver implements Archiver {
 			DBUtils.closeAll(conn, pstmt, null);
 		}
 	}
+	
+	public void dumpUrl(int startId, DumpFilter filter, String outputPath, int printProgressEvery) throws Exception{
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		BufferedWriter bw = null;
+
+		try {
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputPath), "UTF8"));
+			conn = PoolManager.getConnection();
+			stmt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+			stmt.setFetchSize(Integer.MIN_VALUE);
+
+			rs = stmt.executeQuery("select id, url, depth, lastVisitTime from webpage where id>"+startId);
+			Gson gson = new Gson();
+			int i = 0;
+			int total = 0;
+			while (rs.next()) {
+				i++;
+				if (i % printProgressEvery == 0) {
+					logger.info("progress: " + i + "\t write: " + total);
+				}
+				int id=rs.getInt(1);
+				String url = rs.getString(2);
+				int depth=rs.getInt(3);
+				Timestamp ts=rs.getTimestamp(4);
+				if (!filter.accept(id, url, depth, ts))
+					continue;
+				total++; 
+				Map<String, String> jsonObj = new HashMap<>(2);
+				jsonObj.put("#url#", url);
+				jsonObj.put("#id#", id+"");
+				bw.write(gson.toJson(jsonObj) + "\n");
+			}
+			logger.info("progress: " + i + "\t write: " + total);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (bw != null) {
+				bw.close();
+			}
+			DBUtils.closeAll(conn, stmt, rs);
+		}
+	}
 
 	public void dumpHtml(DumpFilter filter, String outputPath, int printProgressEvery) throws Exception {
 		Connection conn = null;
@@ -849,7 +893,7 @@ public class MysqlArchiver implements Archiver {
 				String url = rs.getString(1);
 				int depth=rs.getInt(2);
 				Timestamp ts=rs.getTimestamp(4);
-				if (!filter.accept(url, depth, ts))
+				if (!filter.accept(-1, url, depth, ts))
 					continue;
 				total++;
 				String content = this.readHtml(rs.getBinaryStream(3));

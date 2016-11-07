@@ -14,13 +14,14 @@ import com.antbrains.sc.archiver.DumpFilter;
 import com.antbrains.sc.archiver.MysqlArchiver;
 import com.antbrains.sc.init.MysqlInit;
 
-public class DumpHtml {
-	protected static Logger logger=Logger.getLogger(DumpHtml.class);
+public class DumpReviewUrl {
+	protected static Logger logger=Logger.getLogger(DumpReviewUrl.class);
 	MysqlArchiver archiver=new MysqlArchiver();
 	private String outDir;
 	private long interval;
 	boolean dumpAll;
-	public DumpHtml(String outDir, long interval, boolean dumpAll){
+	public static final String LAST_ID="/.last_id";
+	public DumpReviewUrl(String outDir, long interval, boolean dumpAll){
 		this.outDir=outDir;
 		this.interval=interval;
 		this.dumpAll=dumpAll;
@@ -29,50 +30,40 @@ public class DumpHtml {
 		logger.info("dumpAll: "+dumpAll);
 	}
 	
-	private Timestamp readLastDumpTime(){
+	private int readLastId(){
 		try{
-			String s = FileTools.readFile(outDir+"/.last_dump_time");
-			SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			return new Timestamp(sdf.parse(s).getTime());
+			String s = FileTools.readFile(outDir+LAST_ID);
+			return Integer.valueOf(s);
 		}catch(Exception e){
-			Calendar cal = Calendar.getInstance();
-			cal.set(Calendar.YEAR, 2000);
-			cal.set(Calendar.MONTH, Calendar.JANUARY);
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-		    return  new Timestamp(cal.getTimeInMillis());
+			return -1;
 		}
 	}
 	
-	public void writeLastDumpTime(Date d	){
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	public void writeLastId(int id){ 
 		try {
-			FileTools.writeFile(outDir+"/.last_dump_time", sdf.format(d));
+			FileTools.writeFile(outDir+LAST_ID, ""+id);
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 		}
 	}
 	
-	
+	private int maxId;
 	public void dump(){
 		while(true){
-			final Timestamp lastDump=this.readLastDumpTime();
+			final int lastId=this.readLastId(); 
+			logger.info("lastId: "+lastId); 
+			maxId=lastId;
 			final SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss");
-			logger.info("lastDump: "+sdf.format(lastDump));
 			Date d=new Date();
 			final String fileName=sdf.format(d);
 			try{
-				archiver.dumpHtml(new DumpFilter(){
+				archiver.dumpUrl(lastId, new DumpFilter(){
 					@Override
 					public boolean accept(int id, String url, int depth, Timestamp lastVisitTime) {
-						if(lastVisitTime==null) return false;
-						if(!dumpAll && lastDump.after(lastVisitTime)){
-							logger.debug("skip: "+url+": "+sdf.format(lastVisitTime));
-							return false;
-						}
+						maxId=Math.max(maxId, id);
 						return depth==2;
 					}
-					
-				}, this.outDir+"/"+fileName, 1000);
+				}, this.outDir+"/"+fileName, 10000);
 				File f=new File(this.outDir+"/"+fileName);
 				if(f.length()>0){
 					logger.info("rename to: "+this.outDir+"/"+fileName+".txt");
@@ -81,7 +72,7 @@ public class DumpHtml {
 					logger.info("remove empty: "+f.getAbsolutePath());
 					f.delete();
 				}
-				this.writeLastDumpTime(new Date(d.getTime()-1000));
+				this.writeLastId(maxId);
 			}catch(Exception e){
 				logger.error(e.getMessage(),e);
 			}
@@ -103,7 +94,7 @@ public class DumpHtml {
 		long dumpInterval=MysqlInit.parseInterval(args[2]);
 		boolean dumpAll=Boolean.parseBoolean(args[3]);
 		new File(outPath).mkdirs();
-		DumpHtml dumpHtml=new DumpHtml(outPath, dumpInterval, dumpAll);
+		DumpReviewUrl dumpHtml=new DumpReviewUrl(outPath, dumpInterval, dumpAll);
 		dumpHtml.dump();
 
 	}

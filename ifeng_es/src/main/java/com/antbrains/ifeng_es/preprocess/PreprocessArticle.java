@@ -95,6 +95,8 @@ public class PreprocessArticle {
 					
 					if(type.equals("资讯")){
 						article=this.parseNews(p, url);
+					}else{
+						continue;
 					}
 					
 					if(article==null){
