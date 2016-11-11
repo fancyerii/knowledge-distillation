@@ -7,9 +7,12 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.antbrains.httpclientfetcher.FileTools;
 import com.antbrains.mysqltool.PoolManager;
+import com.antbrains.nekohtmlparser.NekoHtmlParser;
 import com.antbrains.sc.archiver.DumpFilter;
 import com.antbrains.sc.archiver.MysqlArchiver;
 import com.antbrains.sc.init.MysqlInit;
@@ -48,6 +51,18 @@ public class DumpReviewUrl {
 	}
 	
 	private int maxId;
+	
+	private String getArticleType(NekoHtmlParser p){
+		Node div=p.selectSingleNode("//DIV[contains(@class,'js_crumb')]");
+		if(div==null) return null;
+		NodeList aList=p.selectNodes("./A", div);
+		if(aList==null||aList.getLength()<2){
+			return null;
+		}
+		String type=aList.item(1).getTextContent().trim();
+		
+		return type;
+	}
 	public void dump(){
 		while(true){
 			final int lastId=this.readLastId(); 
@@ -59,8 +74,17 @@ public class DumpReviewUrl {
 			try{
 				archiver.dumpUrl(lastId, new DumpFilter(){
 					@Override
-					public boolean accept(int id, String url, int depth, Timestamp lastVisitTime) {
+					public boolean accept(int id, String url, int depth, Timestamp lastVisitTime, String content) {
 						maxId=Math.max(maxId, id);
+						if(content==null) return false;
+						NekoHtmlParser parser=new NekoHtmlParser();
+						try {
+							parser.load(content, "UTF8");
+						} catch (Exception e) {
+							return false;
+						}
+						String type=getArticleType(parser);
+						if(!"资讯".equals(type)) return false;
 						return depth==2;
 					}
 				}, this.outDir+"/"+fileName, 10000);

@@ -63,7 +63,7 @@ public class DumpHtml {
 			try{
 				archiver.dumpHtml(new DumpFilter(){
 					@Override
-					public boolean accept(int id, String url, int depth, Timestamp lastVisitTime) {
+					public boolean accept(int id, String url, int depth, Timestamp lastVisitTime, String content) {
 						if(lastVisitTime==null) return false;
 						if(!dumpAll && lastDump.after(lastVisitTime)){
 							logger.debug("skip: "+url+": "+sdf.format(lastVisitTime));

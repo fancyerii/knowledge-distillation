@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -837,7 +838,7 @@ public class MysqlArchiver implements Archiver {
 			stmt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
 			stmt.setFetchSize(Integer.MIN_VALUE);
 
-			rs = stmt.executeQuery("select id, url, depth, lastVisitTime from webpage where id>"+startId);
+			rs = stmt.executeQuery("select id, url, depth, lastVisitTime, content from webpage where id>"+startId);
 			Gson gson = new Gson();
 			int i = 0;
 			int total = 0;
@@ -850,7 +851,8 @@ public class MysqlArchiver implements Archiver {
 				String url = rs.getString(2);
 				int depth=rs.getInt(3);
 				Timestamp ts=rs.getTimestamp(4);
-				if (!filter.accept(id, url, depth, ts))
+				String content = this.readHtml(rs.getBinaryStream(5));
+				if (!filter.accept(id, url, depth, ts, content))
 					continue;
 				total++; 
 				Map<String, String> jsonObj = new HashMap<>(2);
@@ -881,7 +883,7 @@ public class MysqlArchiver implements Archiver {
 			stmt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
 			stmt.setFetchSize(Integer.MIN_VALUE);
 
-			rs = stmt.executeQuery("select url,depth,content,lastVisitTime from webpage");
+			rs = stmt.executeQuery("select url,depth,content,lastVisitTime,id from webpage");
 			Gson gson = new Gson();
 			int i = 0;
 			int total = 0;
@@ -893,13 +895,16 @@ public class MysqlArchiver implements Archiver {
 				String url = rs.getString(1);
 				int depth=rs.getInt(2);
 				Timestamp ts=rs.getTimestamp(4);
-				if (!filter.accept(-1, url, depth, ts))
+				int id=rs.getInt(5);
+				if (!filter.accept(-1, url, depth, ts, null))
 					continue;
 				total++;
 				String content = this.readHtml(rs.getBinaryStream(3));
 				Map<String, String> jsonObj = new HashMap<>(2);
 				jsonObj.put("#url#", url);
 				jsonObj.put("#html#", content);
+				jsonObj.put("#id#", id+"");
+				
 				bw.write(gson.toJson(jsonObj) + "\n");
 			}
 			logger.info("progress: " + i + "\t write: " + total);
@@ -970,6 +975,45 @@ public class MysqlArchiver implements Archiver {
 			logger.error(e.getMessage(), e);
 		} finally {
 			DBUtils.closeAll(conn, pstmt, null);
+		}
+	}
+	
+	public void addReviewUrls(List<Integer> ids, List<String> urls) throws Exception{
+		Connection conn = PoolManager.getConnection();
+		int batchSize=1000;
+		boolean autoCommit=conn.getAutoCommit();
+		try{
+			conn.setAutoCommit(false);
+			for(int i=0;i<ids.size();i+=batchSize){
+				List<Integer> subIds=ids.subList(i, Math.min(i+batchSize, ids.size()));
+				List<String> subUrls=urls.subList(i, Math.min(i+batchSize, ids.size()));
+				this.doAddReviewUrls(conn, subIds, subUrls);
+			}
+		}finally{
+			conn.setAutoCommit(autoCommit);
+			DBUtils.closeAll(conn, null, null);
+		}
+	}
+	
+	private void doAddReviewUrls(Connection conn, List<Integer> ids, List<String> urls) throws SQLException{
+		
+		PreparedStatement pstmt = null;
+		try {
+			
+			pstmt = conn.prepareStatement(
+					"insert ignore into review_status(page_id, page_url, add_time) values(?,?,now())");
+			Iterator<Integer> idIter=ids.iterator();
+			Iterator<String> urlIter=urls.iterator();
+			while(idIter.hasNext()){
+				pstmt.setInt(1, idIter.next());
+				pstmt.setString(2, urlIter.next()); 
+				pstmt.addBatch();
+			} 
+
+			pstmt.executeBatch();
+
+		}finally {
+			DBUtils.closeAll(null, pstmt, null);
 		}
 	}
 }

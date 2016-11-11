@@ -196,6 +196,27 @@ CREATE TABLE `cmt_content` (
 	 PRIMARY KEY (`host_name_port`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 	
+CREATE TABLE `review_status` ( 
+    `page_id` int NOT NULL,
+	`page_url` varchar(1024) NOT NULL, 
+	`add_time` datetime NOT NULL,
+    `lastUpdate` datetime,
+    `lastestReviewTime` varchar(50),
+    `lastAdded` int,
+    `total_review` int default 0,
+    `update_interval_sec` int,
+    `crawling_status` int default 0,
+	PRIMARY KEY (`page_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
+
+CREATE TABLE `review_content` ( 
+    `rv_id` varchar(255) NOT NULL,
+    `page_id` int NOT NULL,
+    `date` varchar(50),
+    `content` mediumtext,
+	PRIMARY KEY (`rv_id`),
+	KEY `pid` (`page_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
 
 insert into website(siteName,tags) values('应用宝','app');
 ALTER TABLE webpage AUTO_INCREMENT = 1;
