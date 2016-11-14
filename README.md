@@ -340,7 +340,35 @@ CREATE TABLE `cmt_content` (
 	PRIMARY KEY (`md5`,`user`,`pub_time`), 
 	KEY `md5` (`md5`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `component_status` ( 
+    `host_name_port` varchar(255) NOT NULL,
+	`status` varchar(255) NOT NULL, 
+	`last_update` datetime DEFAULT NULL,
+	 PRIMARY KEY (`host_name_port`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 	
+CREATE TABLE `review_status` ( 
+    `page_id` int NOT NULL,
+	`page_url` varchar(1024) NOT NULL, 
+	`add_time` datetime NOT NULL,
+    `lastUpdate` datetime,
+    `lastestReviewTime` varchar(50),
+    `lastAdded` int,
+    `total_review` int default 0,
+    `update_interval_sec` int,
+    `crawling_status` int default 0,
+	PRIMARY KEY (`page_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
+
+CREATE TABLE `review_content` ( 
+    `rv_id` varchar(255) NOT NULL,
+    `page_id` int NOT NULL,
+    `date` varchar(50),
+    `content` mediumtext,
+	PRIMARY KEY (`rv_id`),
+	KEY `pid` (`page_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;		
 
 insert into website(siteName,tags) values('凤凰网佛教频道','fojiao');
 ALTER TABLE webpage AUTO_INCREMENT = 1;
@@ -937,11 +965,30 @@ MYSQL_PASS=12345
 ##### 2.4.4.0 安装
 mvn compile assembly:single
 ##### 2.4.4.1 init.sh
-其实就是调用IfengScheduler把入口url加到hornetq里。这个程序只需要运行一次。而后面的两个脚本如果出现问题，可以重启【这个程序重新运行意味着网站重新刷新一次】
+【更新】
+现在的init.sh调用的是MysqlInit，这个脚本会定期的把入口url放到队列里，从而实现定期的刷新。新版的schedule和crawler会定期的把自己的状态更新到mysql服务器的表里，MysqlInit会根据这些信息来判断上一次抓起是否结束。
+```
+java -Dlog4j.configuration=log4j-init.properties -cp ".:../ifeng_crawler-1.0.1-jar-with-dependencies.jar" com.antbrains.ifengcrawler.scheduler.IfengInit  "jnp://ai-dev:1099" ai-dev:3333 ifeng 15m 5m &
+```
+这里有两个参数15m和5m，分别代表更新时间是15分钟，也就是最快15分钟更新一次【前提是一次刷新完成了】，一般可以改大一点，比如1d【一天】/12h【12小时】。另一个参数5m代表5分钟，表示多久没有新的任务产生就代表抓起完成了。
+
+说明：对于一个分布式的系统，要判断一次抓取是否完成，其实并不容易。我们这里使用了比较简单的办法，每个模块定期的汇报自己的情况，如果所以模块在5分钟以上都没有任务，那么我们就认为抓取完成了。
+为了支持这个功能，需要增加一个表
+```
+	CREATE TABLE `component_status` ( 
+    `host_name_port` varchar(255) NOT NULL,
+	`status` varchar(255) NOT NULL, 
+	`last_update` datetime DEFAULT NULL,
+	 PRIMARY KEY (`host_name_port`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
+	
+
+~~其实就是调用IfengScheduler把入口url加到hornetq里。这个程序只需要运行一次。而后面的两个脚本如果出现问题，可以重启【这个程序重新运行意味着网站重新刷新一次】~~
 
 ```
-需要把ai-dev改成你的服务器的内网ip！！！
-  java -Dlog4j.configuration=log4j-init.properties -cp ".:./ifeng_crawler-1.0-jar-with-dependencies.jar" com.antbrains.ifengcrawler.scheduler.IfengScheduler  "jnp://ai-dev:1099" ai-dev:3333 ifeng
+~~需要把ai-dev改成你的服务器的内网ip！！！~~
+~~  java -Dlog4j.configuration=log4j-init.properties -cp ".:./ifeng_crawler-1.0-jar-with-dependencies.jar" com.antbrains.ifengcrawler.scheduler.IfengScheduler  "jnp://ai-dev:1099" ai-dev:3333 ifeng~~
 ```
 
 ##### 2.4.4.2 schedule.sh
