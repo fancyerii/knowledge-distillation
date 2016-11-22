@@ -1,0 +1,256 @@
+## 1. 新建maven项目
+```
+mvn archetype:generate -DgroupId=com.github.fancyerii  \
+    -DartifactId=takungpao_crawler \
+    -DarchetypeArtifactId=maven-archetype-quickstart \
+    -DarchetypeCatalog=internal \
+    -DinteractiveMode=false
+```
+
+##  2. 修改pom.xml
+请参考ifeng_crawer/pom.xml
+
+## 3. 创建数据库
+```
+DROP DATABASE IF EXISTS `takungpao`;
+CREATE DATABASE `takungpao`;
+CREATE USER 'takungpao'@'%' IDENTIFIED BY '12345';
+GRANT ALL PRIVILEGES ON  takungpao.* TO 'takungpao'@'%';
+FLUSH PRIVILEGES;
+```
+
+## 4. 创建表
+```
+USE `takungpao`;
+
+CREATE TABLE `attr` (
+  `pageId` int(11) NOT NULL DEFAULT '0',
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `value` mediumtext,
+  `src` tinyint(4) DEFAULT NULL,
+  PRIMARY KEY (`pageId`,`name`),
+  KEY `pageId` (`pageId`),
+  KEY `srcIdx` (`src`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `linkattr` (
+  `blockId` int(11) NOT NULL DEFAULT '0',
+  `pageId` int(11) NOT NULL DEFAULT '0',
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `value` mediumtext,
+  PRIMARY KEY (`blockId`,`pageId`,`name`),
+  KEY `linkIdx` (`blockId`,`pageId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#
+# Source for table block
+#
+
+CREATE TABLE `block` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tags` varchar(255) DEFAULT NULL,
+  `lastVisitTime` datetime DEFAULT NULL,
+  `lastFinishTime` datetime DEFAULT NULL,
+  `updateInfo` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+#
+# Source for table link
+#
+
+CREATE TABLE `link` (
+  `blockId` int(11) NOT NULL DEFAULT '0',
+  `pageId` int(11) NOT NULL DEFAULT '0',
+  `pos` int(11) NOT NULL DEFAULT '0',
+  `linkText` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`blockId`,`pageId`),
+  KEY `pageId` (`pageId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#
+# Source for table page_block
+#
+
+CREATE TABLE `page_block` (
+  `pageId` int(11) NOT NULL DEFAULT '0',
+  `blockId` int(11) NOT NULL DEFAULT '0',
+  `pos` smallint(6) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`pageId`,`pos`,`blockId`),
+  KEY `blockId` (`blockId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#
+# Source for table todolist
+#
+
+CREATE TABLE `todolist` (
+  `siteId` int(11) NOT NULL DEFAULT '0',
+  `pageId` int(11) NOT NULL DEFAULT '0',
+  `url` varchar(2048) NOT NULL DEFAULT '',
+  PRIMARY KEY (`siteId`,`pageId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `unfinished` (
+  `id` int(11) NOT NULL,
+  `url` varchar(1024) NOT NULL DEFAULT '',
+  `depth` int NOT NULL,
+  `priority` int NOT NULL DEFAULT '0',
+  `failcount` int NOT NULL DEFAULT 0,
+  `lastVisit` bigint,
+  `redirectedUrl` varchar(1024),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#
+# Source for table webpage
+#
+
+CREATE TABLE `bad_url` (
+  `url` varchar(1024) NOT NULL DEFAULT '',
+  `md5` char(32) NOT NULL,
+  `lastUpdate` datetime DEFAULT NULL,
+  PRIMARY KEY (`md5`) 
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE `webpage` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `url` varchar(1024) NOT NULL DEFAULT '',
+  `redirectedUrl` varchar(1024) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `charSet` varchar(50) DEFAULT NULL,
+  `tags` varchar(255) DEFAULT NULL,
+  `depth` smallint(3) NOT NULL DEFAULT '0',
+  `content` mediumblob,
+  `lastVisitTime` datetime DEFAULT NULL,
+  `lastFinishTime` datetime DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  `websiteId` int(11) NOT NULL DEFAULT '0',
+  `md5` char(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `md5` (`md5`),
+  KEY `url` (`url`(200)),
+  KEY `redirectedUrl` (`redirectedUrl`(200)),
+  KEY `type` (`type`),
+  KEY `siteId` (`websiteId`),
+  KEY `depth` (`depth`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+#
+# Source for table website
+#
+
+CREATE TABLE `website` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `siteName` varchar(255) DEFAULT NULL,
+  `tags` varchar(1024) DEFAULT NULL,
+  `desc` text,
+  `indexPageId` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+CREATE TABLE `pic` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `url` varchar(1024) NOT NULL DEFAULT '',
+  `data` MediumBlob,
+  `lastModified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `url` (`url`(200))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `todo_pic` (
+  `url` varchar(1024) NOT NULL DEFAULT '',
+  `failcount` int NOT NULL DEFAULT 0,
+  UNIQUE KEY `url` (`url`(200))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `crawl_log` (
+  `id` bigint(11) NOT NULL AUTO_INCREMENT,
+  `taskId` varchar(50) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `msg` text,
+  `logTime` datetime,
+  `level` tinyint,
+  `content` mediumtext,
+  PRIMARY KEY (`id`),
+  KEY `taskId` (`taskId`),
+  KEY `type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `cmt_url` (
+  `md5` char(32) NOT NULL,
+  `url` varchar(1024) NOT NULL DEFAULT '',
+  `status` tinyint(4) NOT NULL DEFAULT 0,
+  `total_count` int(11) NOT NULL DEFAULT 0,
+  `good_count` int(11) NOT NULL DEFAULT 0,
+  `bad_count` int(11) NOT NULL DEFAULT 0,
+  `neutral_count` int(11) NOT NULL DEFAULT 0,
+  `tags` varchar(1024) DEFAULT NULL,
+  `last_visit_time` datetime DEFAULT NULL,
+  `last_finish_time` datetime DEFAULT NULL,
+  `last_publish_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`md5`),
+  KEY `status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `cmt_content` ( 
+    `md5` char(32) NOT NULL,
+    `user` varchar(255) NOT NULL, 
+    `pub_time` bigint NOT NULL,
+    `content` mediumtext,
+    PRIMARY KEY (`md5`,`user`,`pub_time`), 
+    KEY `md5` (`md5`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `component_status` ( 
+    `host_name_port` varchar(255) NOT NULL,
+    `status` varchar(255) NOT NULL, 
+    `last_update` datetime DEFAULT NULL,
+     PRIMARY KEY (`host_name_port`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `review_status` ( 
+    `page_id` int NOT NULL,
+    `page_url` varchar(1024) NOT NULL, 
+    `add_time` datetime NOT NULL,
+    `lastUpdate` datetime,
+    `lastestReviewTime` varchar(50),
+    `lastAdded` int,
+    `total_review` int default 0,
+    `update_interval_sec` int,
+    `crawling_status` int default 0,
+    PRIMARY KEY (`page_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `review_content` ( 
+    `rv_id` varchar(255) NOT NULL,
+    `page_id` int NOT NULL,
+    `date` varchar(50),
+    `content` mediumtext,
+    PRIMARY KEY (`rv_id`),
+    KEY `pid` (`page_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into website(siteName,tags) values('大公佛教','fojiao');
+ALTER TABLE webpage AUTO_INCREMENT = 1;
+insert into webpage(url,websiteId,md5) values('http://bodhi.takungpao.com/topnews/',1,md5('http://bodhi.takungpao.com/topnews/'));
+
+update website set indexPageId=1 where id=1;
+```
+
+## 创建队列
+```
+   <queue name="takungpao" >
+      <entry name="queues/takungpao"/>
+   </queue>
+
+```
+
+## 编写代码
+
+## 脚本
