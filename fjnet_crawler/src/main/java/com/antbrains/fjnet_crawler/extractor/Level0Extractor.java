@@ -60,9 +60,6 @@ public class Level0Extractor extends BasicInfoExtractor{
 		List<ListPageItem> allItems=this.extractItems(webPage.getUrl(), parser, archiver, taskId, content);
 		String url=webPage.getUrl();
 		NodeList aList=parser.selectNodes("//DIV[@id='t_content_right']//DIV[4]//A");//"//DIV[@class='listnum']//A");
-		NodeList divList=parser.selectNodes("//DIV[@class='t_content_d']//LI");
-		int len=aList.getLength();
-		int len2=divList.getLength();
 		Node lastPageAnchor=aList.item(aList.getLength()-1);
 		String s=parser.getNodeText("./@href", lastPageAnchor);//lastPageAnchor.getTextContent().trim();
 		s=s.substring(8, 9).trim();
@@ -144,8 +141,6 @@ public class Level0Extractor extends BasicInfoExtractor{
 			String content) {
 		List<ListPageItem> items = new ArrayList<>(40);
 		NodeList divList=parser.selectNodes("//DIV[@class='t_content_d']//LI");
-		NodeList aList=parser.selectNodes("//DIV[@id='t_content_right']//DIV[4]//A");
-		int len=aList.getLength();
 		for(int i=0;i<divList.getLength();i++){
 			Node div=divList.item(i);
 			Node anchor=parser.selectSingleNode("./A", div);
