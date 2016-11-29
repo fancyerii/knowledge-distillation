@@ -88,23 +88,24 @@ public class PreprocessArticle {
 
 					NekoHtmlParser p = new NekoHtmlParser();
 					p.load(html, "UTF8");
-					String type = this.getArticleType(p);
-					if (type == null) {
-						logger.warn("can't get type: " + url);
-						continue;
-					}
-					Article article = null;
-
-					if (type.equals("资讯")) {
-						article = this.parseNews(p, url);
-					} else {
-						continue;
-					}
+					// String type = this.getArticleType(p);
+					// if (type == null) {
+					// logger.warn("can't get type: " + url);
+					// continue;
+					// }
+					// Article article = null;
+					//
+					// if (type.equals("资讯")) {
+					// article = this.parseNews(p, url);
+					// } else {
+					// continue;
+					// }
+					Article article = this.parseNews(p, url);
 
 					if (article == null) {
 						logger.warn("article null:  " + url);
 					} else {
-						article.setTypes(new String[] { type });
+						// article.setTypes(new String[] { type });
 						article.setSegContent(this.seg(article.getContent()));
 						article.setSegTitle(seg(article.getTitle()));
 						bw.write(gson.toJson(article) + "\n");
@@ -144,7 +145,7 @@ public class PreprocessArticle {
 
 	// private Pattern ptn = Pattern.compile("(\\d+)年(\\d+)月(\\d+)日
 	// (\\d+):(\\d+)");
-	private Pattern ptn = Pattern.compile("(\\d+)-(\\d+)-(\\d+) (\\d+):(\\d+):(\\d+)");
+	private Pattern ptn = Pattern.compile("(\\d+)-(\\d+)-(\\d+) (\\d+):(\\d+):(\\d+)|");
 
 	private Date parsePubTime(String s) {
 		try {
@@ -210,24 +211,25 @@ public class PreprocessArticle {
 		Node pubNode = infoNodes.item(0);
 		Node srcNode = infoNodes.item(1);
 		String pubStr = pubNode.getTextContent().trim();
-		
-		String srcStr = pubNode.getTextContent().trim();
+		String srcStr = srcNode.getTextContent().trim();
 
 		Date pubTime = this.parsePubTime(pubStr);
 		if (pubTime == null)
 			return null;
 		article.setPubTime(pubTime);
-		String source = p.getNodeText("//SPAN[@itemprop='publisher']/SPAN").trim();
+
+		String source = srcStr.substring(srcStr.indexOf("：") + 1, srcStr.length() - 1);
 		article.setSource(empty2Null(source));
-		
+
 		String commentStr = p.getNodeText("//EM[@class='js_cmtNum']").trim();
 		int comments = this.parseInt(commentStr, 0);
 
 		article.setComments(comments);
-		Node contentNode = p.selectSingleNode("//DIV[@id='main_content']");
+		Node contentNode = p.selectSingleNode("//DIV[contains(@class, 'tpk_text')]");
 		if (contentNode == null)
 			return null;
-		NodeList nl = p.selectNodes("./P[not(@class)]", contentNode);
+		// DIV[contains(@class, 'tpk_text')]/P[not(@style)]
+		NodeList nl = p.selectNodes("./P[not(@style)]", contentNode);
 		StringBuilder sb = new StringBuilder("");
 		for (int i = 0; i < nl.getLength(); i++) {
 			if (i > 0) {
@@ -238,11 +240,14 @@ public class PreprocessArticle {
 
 		String content = sb.toString();
 		article.setContent(content);
+
+		// Can't find author info in takungpao.com
 		String author = p.getNodeText("//SPAN[@itemprop='author']/SPAN").trim();
 		if (!author.isEmpty()) {
 			article.setAuthors(new String[] { author });
 		}
-		NodeList imgs = p.selectNodes("//DIV[@id='main_content']//IMG");
+
+		NodeList imgs = p.selectNodes("//DIV[contains(@class, 'tpk_text')]//IMG");
 		if (imgs.getLength() > 0) {
 			ArrayList<String> imgUrls = new ArrayList<>(imgs.getLength());
 			for (int i = 0; i < imgs.getLength(); i++) {
