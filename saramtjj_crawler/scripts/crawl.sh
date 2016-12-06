@@ -1,0 +1,1 @@
+java  -Dlog4j.configuration=log4j-crawl.properties -cp ".:./saramtjj_crawler-1.0-SNAPSHOT-jar-with-dependencies.jar" com.antbrains.saramtjj.scheduler.CrawlerDriver --isUpdate true --stopPort 9112 --workerNum 10 "jnp://10.26.161.20:1099" 10.26.161.20:3333 saramtjj com.antbrains.saramtjj.extractor.SaramtjjExtractor queuedata &
