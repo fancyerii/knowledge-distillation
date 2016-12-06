@@ -313,7 +313,7 @@ public class HbaseTool {
 		String zkPort = null;
 		String helpStr = "HbaseTool hbase.zookeeper.quorum dbName";
 		boolean deleteExist = false;
-		int rsCount = 10;
+		int rsCount = 1;
 		try {
 			// parse the command line arguments
 			CommandLine line = parser.parse(options, args);

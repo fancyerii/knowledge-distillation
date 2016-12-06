@@ -95,7 +95,8 @@ public class Writer extends Thread {
 			HbaseTool.delRows(dbName, HbaseTool.TB_URLDB_CRAWLING, hbaseConn, all);
 			//PhoenixTool.upsertTasks(phoenixConn, cache);
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			//logger.error(e.getMessage(), e);
+			logger.error(e.getMessage());
 		}
 		// update mysql status
 
