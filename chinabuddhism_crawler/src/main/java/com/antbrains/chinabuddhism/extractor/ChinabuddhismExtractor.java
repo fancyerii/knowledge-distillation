@@ -4,7 +4,6 @@ import com.antbrains.sc.extractor.Extractor;
 import com.antbrains.sc.extractor.NullExtractor;
 import com.antbrains.sc.extractor.UrlPatternExtractor;
 import com.antbrains.sc.extractor.UrlPatternExtractor4Hbase;
-import com.github.fancyerii.takungpaocrawler.extractor.TakungpaoExtractor;
 
 public class ChinabuddhismExtractor extends UrlPatternExtractor {
 	private Extractor[] extractors=new Extractor[]{

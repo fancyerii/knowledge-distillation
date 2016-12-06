@@ -59,19 +59,22 @@ public class Level0Extractor extends BasicInfoExtractor{
 		
 		List<ListPageItem> allItems=this.extractItems(webPage.getUrl(), parser, archiver, taskId, content);
 		String url=webPage.getUrl();
-		NodeList aList=parser.selectNodes("//DIV[@id='t_content_right']//DIV[4]//A");//"//DIV[@class='listnum']//A");
+		/*
+		NodeList aList=parser.selectNodes("//DIV[@class='listnum']//A[@href='default_1.htm']");
+		int len=aList.getLength();
 		Node lastPageAnchor=aList.item(aList.getLength()-1);
 		String s=parser.getNodeText("./@href", lastPageAnchor);//lastPageAnchor.getTextContent().trim();
 		s=s.substring(8, 9).trim();
 		int lastPage=this.parseInt(s);
+		*/
+		int lastPage=25;
 		
-		
-		for(int i=2;i<=lastPage;i+=maxCrawlThread){
+		for(int i=1;i<lastPage;i+=maxCrawlThread){
 			int startPage=i;
 			int endPage=Math.min(lastPage, i+maxCrawlThread);
 			List<String> batchUrls=new ArrayList<>(maxCrawlThread);
 			for(int pg=startPage;pg<endPage;pg++){
-				String pageUrl=webPage.getUrl()+"/default_"+pg+".htm";
+				String pageUrl=webPage.getUrl()+"default_"+pg+".htm";
 				batchUrls.add(pageUrl);
 			}
 			List<String[]> batchResults=BatchCrawler.crawler(batchUrls, maxCrawlThread, fetcher, cpi);
