@@ -23,8 +23,6 @@ public class SearchApi extends HttpServlet {
 			throws ServletException, IOException {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
-		
-		
 		response.getWriter().write(gson.toJson(this.doSearch(request)));
 	}
 	
