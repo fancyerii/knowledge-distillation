@@ -192,7 +192,8 @@ public class Producer extends Thread{
 					HbaseTool.delRows(dbName, tbName, conn, urls);
 				}
 			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
+				//logger.error(e.getMessage(), e);
+				logger.error(e.getMessage());
 				boolean skip=this.sleepAndCheckExit(100, 30000);
 				if(skip) break;
 			}

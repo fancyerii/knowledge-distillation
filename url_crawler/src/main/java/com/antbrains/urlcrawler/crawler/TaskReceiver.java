@@ -50,7 +50,7 @@ public class TaskReceiver extends Thread{
 				CrawlTask ct = gson.fromJson(s, CrawlTask.class);
 				this.taskQueue.put(ct);
 			}catch(Exception e){
-				logger.error(e.getMessage(),e);
+				//logger.error(e.getMessage(),e);
 				return;
 			}
 		}
