@@ -7,6 +7,8 @@ public class SearchItem {
 	private String contentHightlight;
 	private String pubTime;
 	private String url;
+	private String src;
+	private String mainImage;
 	public String getTitle() {
 		return title;
 	}
@@ -42,5 +44,17 @@ public class SearchItem {
 	}
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	public void setSrc(String src){
+		this.src = src;
+	}
+	public String getSrc(){
+		return src;
+	}
+	public void setMainImage(String figurl){
+		this.mainImage = figurl;
+	}
+	public String getMainImage(){
+		return mainImage;
 	}
 }

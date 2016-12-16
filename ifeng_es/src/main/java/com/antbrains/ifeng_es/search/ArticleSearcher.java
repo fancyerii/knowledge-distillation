@@ -58,7 +58,9 @@ public class ArticleSearcher {
 		srb.setQuery(bqb);
 		srb.setFrom((pageNo-1)*10);
 		srb.setSize(10);
-		srb.addFields(new String[]{"title","pubTime", "url", "types", "content"});
+		
+		// add source and main-image
+		srb.addFields(new String[]{"title","pubTime", "url", "types", "content", "source", "mainImage",});
 		//System.out.println(srb.toString());
 		SearchResponse searchResponse = srb.execute().actionGet();
 		SearchHit[] hits = searchResponse.getHits().getHits();
@@ -69,6 +71,14 @@ public class ArticleSearcher {
 			String pubTime=hit.getFields().get("pubTime").getValue(); 
 			List<Object> types=hit.getFields().get("types").getValues();
 			String content=hit.getFields().get("content").getValue();
+			
+			// source
+			String src = hit.getFields().get("source").getValue();
+			
+			// main-image
+			String mainImage = hit.getFields().get("mainImage").getValue();
+			
+			
 			SearchItem item=new SearchItem();
 			item.setUrl(url);
 			item.setPubTime(pubTime);
@@ -76,6 +86,10 @@ public class ArticleSearcher {
 			item.setTitle(title);
 			item.setTitleHighlight(this.highlightTitle(title, words, startTag, endTag));
 			item.setContentHightlight(this.highlightConent(content, words, startTag, endTag));
+			
+			// set source and main-image
+			item.setSrc(src);
+			item.setMainImage(mainImage);
 			sr.getItems().add(item);
 		}
 		sr.setTotalResult(searchResponse.getHits().totalHits());

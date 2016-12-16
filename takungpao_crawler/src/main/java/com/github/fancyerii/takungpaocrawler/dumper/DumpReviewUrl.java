@@ -87,10 +87,7 @@ public class DumpReviewUrl {
 						} catch (Exception e) {
 							return false;
 						}
-						String type = getArticleType(parser);
-						if (!"资讯".equals(type))
-							return false;
-						return depth == 2;
+						return depth == 1;
 					}
 				}, this.outDir + "/" + fileName, 10000);
 				File f = new File(this.outDir + "/" + fileName);
