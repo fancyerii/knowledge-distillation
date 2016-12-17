@@ -24,10 +24,11 @@ import org.w3c.dom.NodeList;
 import com.antbrains.nekohtmlparser.NekoHtmlParser;
 import com.antbrains.nlp.wordseg.SentenceSplit;
 import com.antbrains.nlp.wordseg.WordSeg;
-import com.antbrains.takungpao_es.data.Article;
-import com.antbrains.takungpao_es.tools.IntervalParser;
-import com.antbrains.takungpao_es.tools.UrlTools;
-import com.antbrains.takungpao_es.tools.gson.GsonTool;
+import com.antbrains.ifeng_es.data.Article;
+import com.antbrains.ifeng_es.tools.IntervalParser;
+import com.antbrains.ifeng_es.tools.UrlTools;
+import com.antbrains.ifeng_es.tools.gson.GsonTool;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

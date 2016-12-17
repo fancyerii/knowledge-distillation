@@ -66,11 +66,12 @@ public class DumpHtml {
 					public boolean accept(int id, String url, int depth, Timestamp lastVisitTime, String content) {
 						if (lastVisitTime == null)
 							return false;
+						logger.info(""+id+","+url+","+depth+","+(content==null));
 						if (!dumpAll && lastDump.after(lastVisitTime)) {
 							logger.debug("skip: " + url + ": " + sdf.format(lastVisitTime));
 							return false;
 						}
-						return depth == 2;
+						return depth == 1;
 					}
 
 				}, this.outDir + "/" + fileName, 1000);

@@ -858,6 +858,7 @@ public class MysqlArchiver implements Archiver {
 				Map<String, String> jsonObj = new HashMap<>(2);
 				jsonObj.put("#url#", url);
 				jsonObj.put("#id#", id+"");
+				logger.info("Debug "+id+" "+url);
 				bw.write(gson.toJson(jsonObj) + "\n");
 			}
 			logger.info("progress: " + i + "\t write: " + total);
