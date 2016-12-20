@@ -223,6 +223,11 @@ public abstract class BasicInfoExtractor implements Extractor {
 		return null;
 	}
 
+	@Override
+	public boolean needUpdate(WebPage webPage){
+		return webPage.getLastVisitTime()!=null;
+	}
+	
 	public static void main(String[] args) {
 		String oldUrl = "http://shouji.baidu.com/software/list?cid=506";
 		String s = rewriteUrl(oldUrl, "page", "3");

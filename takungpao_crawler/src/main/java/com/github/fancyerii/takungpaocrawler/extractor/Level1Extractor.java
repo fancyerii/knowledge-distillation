@@ -22,10 +22,6 @@ public class Level1Extractor extends BasicInfoExtractor{
 			Archiver archiver, String taskId) { 
 		return null;
 	}
-
-	@Override
-	public boolean needUpdate(WebPage webPage) { 
-		return false;
-	}
+	
 
 }
