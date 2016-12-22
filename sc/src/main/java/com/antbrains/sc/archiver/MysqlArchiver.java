@@ -266,6 +266,38 @@ public class MysqlArchiver implements Archiver {
 			DBUtils.closeAll(conn, pstmt, null);
 		}
 	}
+	
+	public void loadBlocks(String dbName, WebPage webPage) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			conn = PoolManager.getConnection(dbName);
+			// page_block <--> block
+			pstmt = conn.prepareStatement(
+					"select b.id,b.tags,b.lastVisitTime,b.lastFinishTime,pb.pos,b.updateInfo from `block` b, page_block pb where pb.pageId=? and b.id=pb.blockId order by pb.pos");
+			pstmt.setInt(1, webPage.getId());
+			rs = pstmt.executeQuery();
+			List<Block> blocks = new ArrayList<Block>();
+			webPage.setBlocks(blocks);
+
+			while (rs.next()) {
+				Block block = new Block();
+				blocks.add(block);
+				block.setId(rs.getInt(1));
+				block.setTags(DBUtils.tagString2List(rs.getString(2)));
+				block.setLastVisitTime(DBUtils.timestamp2Date(rs.getTimestamp(3)));
+				block.setLastFinishTime(DBUtils.timestamp2Date(rs.getTimestamp(4)));
+
+				block.setUpdateInfo(rs.getString(6));
+				loadPagesFromBlock(block, conn);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			DBUtils.closeAll(conn, pstmt, rs);
+		}
+	}
 
 	@Override
 	public void loadBlocks(WebPage webPage) {
@@ -711,6 +743,41 @@ public class MysqlArchiver implements Archiver {
 
 		buffer.flush();
 		return new String(buffer.toByteArray(), "UTF8");
+	}
+	
+	public WebPage getWebPage(String dbName, String url){
+		WebPage page = new WebPage();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			conn = PoolManager.getConnection(dbName);
+			pstmt = conn.prepareStatement(
+					"select url,title,charSet,tags,depth,lastVisitTime,lastFinishTime,redirectedUrl,content,id from webpage where url=?");
+			pstmt.setString(1, url);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				page.setUrl(rs.getString(1));
+				page.setTitle(rs.getString(2));
+				page.setCharSet(rs.getString(3));
+				page.setTags(DBUtils.tagString2List(rs.getString(4)));
+				page.setDepth(DBUtils.getNullableInt(5, rs));
+				page.setLastVisitTime(DBUtils.timestamp2Date(rs.getTimestamp(6)));
+				page.setLastFinishTime(DBUtils.timestamp2Date(rs.getTimestamp(7)));
+				page.setRedirectedUrl(rs.getString(8));
+
+				// page.setContent(rs.getString(9));
+				page.setContent(this.readHtml(rs.getBinaryStream(9)));
+				page.setId(rs.getInt(10));
+				return page;
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			DBUtils.closeAll(conn, pstmt, rs);
+		}
+		return null;
 	}
 
 	public WebPage getWebPage(String url) {
