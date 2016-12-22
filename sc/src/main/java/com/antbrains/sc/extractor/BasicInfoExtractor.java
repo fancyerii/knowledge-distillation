@@ -13,6 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.antbrains.httpclientfetcher.HttpClientFetcher;
 import com.antbrains.nekohtmlparser.NekoHtmlParser;
@@ -48,8 +50,12 @@ public abstract class BasicInfoExtractor implements Extractor {
 		HttpClientFetcher fetcher = new HttpClientFetcher("");
 		fetcher.init();
 		String content = null;
-		try {
-			content = fetcher.httpGet(webPage.getUrl());
+		try { 
+			String[] arr=fetcher.httpGetReturnRedirect(webPage.getUrl(),3);
+			if(arr!=null){
+				content=arr[0];
+				webPage.setRedirectedUrl(arr[1]);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -122,6 +128,19 @@ public abstract class BasicInfoExtractor implements Extractor {
 
 	protected String normUrl(String url) {
 		return url;
+	}
+	
+	protected int extractLinks(String baseUrl, String anchorXPath, NekoHtmlParser parser, List<String> urls, List<String> anchors){
+		NodeList as=parser.selectNodes(anchorXPath);
+		for(int i=0;i<as.getLength();i++){
+			Node a=as.item(i);
+			String href=parser.getNodeText("./@href", a);
+			String url=UrlUtils.getAbsoluteUrl(baseUrl, href);
+			String anchor=a.getTextContent().trim();
+			urls.add(url);
+			anchors.add(anchor);
+		}
+		return as.getLength();
 	}
 
 	protected Block addChild(List<String> urls, List<String> anchors, int depth,
