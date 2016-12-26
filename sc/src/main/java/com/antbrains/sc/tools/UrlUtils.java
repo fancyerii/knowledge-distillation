@@ -55,6 +55,46 @@ public class UrlUtils {
 		}
 	}
 
+	public static String removeQuery(String url) {
+		try {
+			URL u = new URL(url);
+			return removeQuery(u);
+		} catch (MalformedURLException e) {
+			return url;
+		}
+	}
+
+	public static String removeQuery(URL u) {
+		// pre-compute length of StringBuffer
+		int len = u.getProtocol().length() + 1;
+		if (u.getAuthority() != null && u.getAuthority().length() > 0)
+			len += 2 + u.getAuthority().length();
+		if (u.getPath() != null) {
+			len += u.getPath().length();
+		}
+		if (u.getQuery() != null) {
+			len += 1 + u.getQuery().length();
+		}
+		if (u.getRef() != null)
+			len += 1 + u.getRef().length();
+
+		StringBuffer result = new StringBuffer(len);
+		result.append(u.getProtocol());
+		result.append(":");
+		if (u.getAuthority() != null && u.getAuthority().length() > 0) {
+			result.append("//");
+			result.append(u.getAuthority());
+		}
+		if (u.getPath() != null) {
+			result.append(u.getPath());
+		}
+		if (u.getRef() != null && u.getRef().length() > 0) {
+			result.append("#").append(u.getRef());
+		}
+
+		return result.toString();
+	}
+
 	public static String removeAnchorAndQuery(URL u) {
 
 		// pre-compute length of StringBuffer
@@ -166,5 +206,10 @@ public class UrlUtils {
 		String url = "http://t.miyou.cc/sDd6eGdu/恰恰舞曲/[QQ]2017-恰恰、小小情歌[曾春年].mp3";
 		url = encodeCn(url, "UTF8");
 		System.out.println(url);
+
+		url = "http://www.abc.com?a=b#ccdd";
+		System.out.println(UrlUtils.removeAnchor(url));
+		System.out.println(UrlUtils.removeQuery(url));
+		System.out.println(UrlUtils.removeAnchorAndQuery(url));
 	}
 }

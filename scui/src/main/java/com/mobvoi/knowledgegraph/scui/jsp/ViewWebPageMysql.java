@@ -39,10 +39,10 @@ public class ViewWebPageMysql {
 		// TODO read cache
 		WebPage webPage = null;
 		try {
-			webPage = archiver.getWebPage(url);
+			webPage = archiver.getWebPage(dbName, url);
 			if (webPage == null)
 				return null; 
-			archiver.loadBlocks(webPage);
+			archiver.loadBlocks(dbName, webPage);
 			
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

@@ -50,10 +50,10 @@ public abstract class BasicInfoExtractor implements Extractor {
 		HttpClientFetcher fetcher = new HttpClientFetcher("");
 		fetcher.init();
 		String content = null;
-		try { 
-			String[] arr=fetcher.httpGetReturnRedirect(webPage.getUrl(),3);
-			if(arr!=null){
-				content=arr[0];
+		try {
+			String[] arr = fetcher.httpGetReturnRedirect(webPage.getUrl(), 3);
+			if (arr != null) {
+				content = arr[0];
 				webPage.setRedirectedUrl(arr[1]);
 			}
 		} catch (Exception e) {
@@ -123,20 +123,21 @@ public abstract class BasicInfoExtractor implements Extractor {
 	}
 
 	protected Block addChild(List<String> urls, List<String> anchors, int depth) {
-		return addChild(urls, anchors, depth, null, true, true, true, true);
+		return addChild(urls, anchors, depth, null, true, true, true, true, false);
 	}
 
 	protected String normUrl(String url) {
 		return url;
 	}
-	
-	protected int extractLinks(String baseUrl, String anchorXPath, NekoHtmlParser parser, List<String> urls, List<String> anchors){
-		NodeList as=parser.selectNodes(anchorXPath);
-		for(int i=0;i<as.getLength();i++){
-			Node a=as.item(i);
-			String href=parser.getNodeText("./@href", a);
-			String url=UrlUtils.getAbsoluteUrl(baseUrl, href);
-			String anchor=a.getTextContent().trim();
+
+	protected int extractLinks(String baseUrl, String anchorXPath, NekoHtmlParser parser, List<String> urls,
+			List<String> anchors) {
+		NodeList as = parser.selectNodes(anchorXPath);
+		for (int i = 0; i < as.getLength(); i++) {
+			Node a = as.item(i);
+			String href = parser.getNodeText("./@href", a);
+			String url = UrlUtils.getAbsoluteUrl(baseUrl, href);
+			String anchor = a.getTextContent().trim();
 			urls.add(url);
 			anchors.add(anchor);
 		}
@@ -145,7 +146,7 @@ public abstract class BasicInfoExtractor implements Extractor {
 
 	protected Block addChild(List<String> urls, List<String> anchors, int depth,
 			List<Map<String, String>> attrsFromParent, boolean removeEmptyAnchor, boolean removeAnchorInUrl,
-			boolean dedup, boolean encodeChinese) {
+			boolean dedup, boolean encodeChinese, boolean removeQuery) {
 		Block block = new Block();
 		List<Link> links = new ArrayList<>(urls.size());
 		block.setLinks(links);
@@ -162,6 +163,9 @@ public abstract class BasicInfoExtractor implements Extractor {
 			String cUrl = urlIter.next();
 			if (removeAnchorInUrl) {
 				cUrl = UrlUtils.removeAnchor(cUrl);
+			}
+			if (removeQuery) {
+				cUrl = UrlUtils.removeQuery(cUrl);
 			}
 			if (encodeChinese) {
 				cUrl = UrlUtils.encodeChinese(cUrl);
@@ -243,10 +247,10 @@ public abstract class BasicInfoExtractor implements Extractor {
 	}
 
 	@Override
-	public boolean needUpdate(WebPage webPage){
-		return webPage.getLastVisitTime()!=null;
+	public boolean needUpdate(WebPage webPage) {
+		return webPage.getLastVisitTime() != null;
 	}
-	
+
 	public static void main(String[] args) {
 		String oldUrl = "http://shouji.baidu.com/software/list?cid=506";
 		String s = rewriteUrl(oldUrl, "page", "3");
