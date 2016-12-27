@@ -1,4 +1,4 @@
-package com.antbrians.sina.extractor;
+package com.antbrains.sina.extractor;
 
 import com.antbrains.sc.extractor.Extractor;
 import com.antbrains.sc.extractor.NullExtractor;

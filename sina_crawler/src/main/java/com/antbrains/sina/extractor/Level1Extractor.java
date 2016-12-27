@@ -1,4 +1,4 @@
-package com.antbrians.sina.extractor;
+package com.antbrains.sina.extractor;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class Level1Extractor extends BasicInfoExtractor{
 
 	@Override
 	public boolean needUpdate(WebPage webPage) { 
-		return false;
+		return super.needUpdate(webPage.getLastVisitTime(), 30, 0, 0, 0);
 	}
 
 }

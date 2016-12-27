@@ -24,7 +24,12 @@ public class Level1Extractor extends BasicInfoExtractor{
 	}
 
 	@Override
-	public boolean needUpdate(WebPage webPage) { 
+	public boolean needUpdate(WebPage webPage) {
+		return super.needUpdate(webPage.getLastVisitTime(), 30, 0, 0, 0);
+	}
+
+	@Override
+	public boolean needAddChildren2FrontierIfNotUpdate(WebPage webPage) {
 		return false;
 	}
 

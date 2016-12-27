@@ -1,4 +1,4 @@
-package com.antbrians.sina.extractor;
+package com.antbrains.sina.extractor;
 
 import java.util.ArrayList;
 import java.util.Calendar;

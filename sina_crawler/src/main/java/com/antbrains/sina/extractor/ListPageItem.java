@@ -1,4 +1,4 @@
-package com.antbrians.sina.extractor;
+package com.antbrains.sina.extractor;
 
 public class ListPageItem {
 	public ListPageItem(String title, String url, String pubTime) {
