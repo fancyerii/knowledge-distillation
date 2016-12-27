@@ -65,20 +65,60 @@ public class ArticleSearcher {
 		SearchResponse searchResponse = srb.execute().actionGet();
 		SearchHit[] hits = searchResponse.getHits().getHits();
 		SearchResult sr=new SearchResult();
-		for(SearchHit hit:hits){
-			String url=hit.getFields().get("url").getValue();
-			String title=hit.getFields().get("title").getValue(); 
-			String pubTime=hit.getFields().get("pubTime").getValue(); 
-			List<Object> types=hit.getFields().get("types").getValues();
-			String content=hit.getFields().get("content").getValue();
+		for(SearchHit hit:hits){			
+			String url = "NULL";
+			String title= "NULL"; 
+			String pubTime= "NULL";
+			List<Object> types;
+			String content = "NULL";
 			
 			// source
-			String src = hit.getFields().get("source").getValue();
+			String src = "NULL";
 			
 			// main-image
-			String mainImage = hit.getFields().get("mainImage").getValue();
-			
-			
+			String mainImage = "http://file.focus.cn/cs/ztdir/sczb108/ztimages/403450.jpg";
+			try {
+				url = hit.getFields().get("url").getValue();
+			} catch (Exception e){
+				logger.error("URL not found!!!");
+				logger.error(e.getMessage());
+			}
+			try {
+				title = hit.getFields().get("title").getValue();
+			} catch (Exception e){
+				logger.error("title not found!!!, URL: " + url);
+				logger.error(e.getMessage());
+			}
+			try {
+				pubTime = hit.getFields().get("pubTime").getValue();
+			} catch (Exception e){
+				logger.error("pubtime not found!!!, URL: " + url);
+				logger.error(e.getMessage());
+			}
+			try {
+				types = hit.getFields().get("types").getValues();
+			} catch (Exception e){
+				logger.error("types not found!!!, URL: " + url);
+				logger.error(e.getMessage());
+			}
+			try {
+				content = hit.getFields().get("content").getValue();
+			} catch (Exception e){
+				logger.error("content not found!!!, URL: " + url);
+				logger.error(e.getMessage());
+			}
+			try {
+				src = hit.getFields().get("source").getValue();
+			} catch (Exception e){
+				logger.error("src not found!!!, URL: " + url);
+				logger.error(e.getMessage());
+			}
+			try {
+				mainImage = hit.getFields().get("mainImage").getValue();
+			} catch(Exception e) {
+				logger.error("mainImage not found!!!, URL: " + url);
+				logger.error(e.getMessage());
+			}
 			SearchItem item=new SearchItem();
 			item.setUrl(url);
 			item.setPubTime(pubTime);

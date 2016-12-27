@@ -19,9 +19,9 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
-import com.antbrains.takungpao_es.data.Article;
-import com.antbrains.takungpao_es.tools.IntervalParser;
-import com.antbrains.takungpao_es.tools.gson.GsonTool;
+import com.antbrains.ifeng_es.data.Article;
+import com.antbrains.ifeng_es.tools.IntervalParser;
+import com.antbrains.ifeng_es.tools.gson.GsonTool;
 import com.google.gson.Gson;
 
 public class ArticleIndexer {
