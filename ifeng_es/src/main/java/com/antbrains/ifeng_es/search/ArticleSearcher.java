@@ -20,6 +20,7 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.*;
 
 import com.antbrains.ifeng_es.index.Constants;
 import com.antbrains.nlp.wordseg.SentenceSplit;
@@ -55,6 +56,7 @@ public class ArticleSearcher {
 			bqb.must(bqb2);
 		}
 		//System.out.println(bqb.toString());
+		srb.addSort("pubTime", SortOrder.DESC);
 		srb.setQuery(bqb);
 		srb.setFrom((pageNo-1)*10);
 		srb.setSize(10);
@@ -76,7 +78,7 @@ public class ArticleSearcher {
 			String src = "NULL";
 			
 			// main-image
-			String mainImage = "http://file.focus.cn/cs/ztdir/sczb108/ztimages/403450.jpg";
+			String mainImage = "http://search.chanlin.org/static/img/default-mainimg.png";
 			try {
 				url = hit.getFields().get("url").getValue();
 			} catch (Exception e){
