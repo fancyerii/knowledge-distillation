@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.wyxpku</groupId>
     <artifactId>search_api</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    <packaging>war</packaging>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -81,7 +81,7 @@
 
 
     <build>
-        <finalName>ifeng_search_api</finalName>
+        <finalName>search_api</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

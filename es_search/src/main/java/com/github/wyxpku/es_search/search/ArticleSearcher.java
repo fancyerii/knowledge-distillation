@@ -138,26 +138,35 @@ public class ArticleSearcher {
         sr.setTotalResult(searchResponse.getHits().totalHits());
         return sr;
     }
-    public SearchResult hot_inrange(Date startDate, Date endDate){
-        if (startDate == null)
+    public SearchResult rangesearch(String startDate, String endDate, int pageNo){
+        // Default format: YY-MM-DD
+        if (startDate.isEmpty())
             return SearchResult.EMPTY;
+        if (pageNo < 1 || pageNo > 1000) pageNo = 1;
 
-        String startTime = date2str(startDate);
-        String endTime = null;
-        if (endDate == null){
-            endTime = getTomorrow(startDate);
+        // append 00:00:00 to the date string
+        // the format defined in es is YY-MM-DD HH:MM:SS, see ifeng_es/scripts/mapping.json for detail
+        startDate += " 00:00:00";
+
+        // if endDate is empty, search range is [startDate, startDate + 1)
+        // else, search range is [startDate, endDate + 1)
+        if (endDate.isEmpty()){
+            endDate = getTomorrow(startDate);
         } else {
-            endTime = getTomorrow(endDate);
+            endDate += " 00:00:00";
+            endDate = getTomorrow(endDate);
         }
+        System.out.println(startDate + '~' + endDate);
         SearchRequestBuilder srb = client.prepareSearch(Constants.indexName).setTypes(Constants.TYPE_ARTICLE);
-
-        RangeQueryBuilder qb = new RangeQueryBuilder("pubTime").from(startTime).to(endTime);
+        RangeQueryBuilder qb = new RangeQueryBuilder("pubTime").from(startDate).to(endDate);
         //System.out.println(bqb.toString());
         srb.addSort("pubTime", SortOrder.DESC);
         srb.setQuery(qb);
+        srb.setFrom((pageNo - 1) * 20);
+        srb.setSize(20);
 
         // add source and main-image
-        srb.addFields(new String[]{"title", "url"});
+        srb.addFields(new String[]{"title", "url", "pubTime"});
         //System.out.println(srb.toString());
         SearchResponse searchResponse = srb.execute().actionGet();
         SearchHit[] hits = searchResponse.getHits().getHits();
@@ -165,6 +174,7 @@ public class ArticleSearcher {
         for (SearchHit hit: hits){
             String url = "NULL";
             String title = "NULL";
+            String pubTime = "NULL";
             try {
                 url = hit.getFields().get("url").getValue();
             } catch (Exception e) {
@@ -177,25 +187,33 @@ public class ArticleSearcher {
                 logger.error("title not found!!!, URL: " + url);
                 logger.error(e.getMessage());
             }
+            try {
+                pubTime = hit.getFields().get("pubTime").getValue();
+            } catch (Exception e) {
+                logger.error("pubtime not found!!!, URL: " + url);
+                logger.error(e.getMessage());
+            }
             SearchItem item = new SearchItem();
             item.setUrl(url);
             item.setTitle(title);
+            item.setPubTime(pubTime);
             sr.getItems().add(item);
         }
+        sr.setTotalResult(searchResponse.getHits().totalHits());
         return sr;
     }
-    private String date2str(Date date){
-        if (date == null)
-            return null;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(date);
-    }
-    private String getTomorrow(Date date){
-        if (date == null)
-            return null;
+
+    private String getTomorrow(String datestr){
+        // append 00:00:00 to datestr
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        cal.setTime(date);
+        Date curdate = null;
+        try {
+            curdate = sdf.parse(datestr);
+        } catch (Exception e){
+            logger.error(e.getMessage());
+        }
+        cal.setTime(curdate);
         cal.set(cal.DATE, cal.get(cal.DATE) + 1);
         return sdf.format(cal.getTime());
     }
