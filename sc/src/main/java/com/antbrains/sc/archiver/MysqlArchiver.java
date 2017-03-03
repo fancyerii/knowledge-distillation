@@ -36,6 +36,8 @@ import com.antbrains.sc.data.Link;
 import com.antbrains.sc.data.WebPage;
 import com.antbrains.sc.tools.HostNameTools;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class MysqlArchiver implements Archiver {
 	protected static Logger logger = Logger.getLogger(MysqlArchiver.class);
@@ -926,6 +928,55 @@ public class MysqlArchiver implements Archiver {
 				jsonObj.put("#url#", url);
 				jsonObj.put("#id#", id+"");
 				bw.write(gson.toJson(jsonObj) + "\n");
+			}
+			logger.info("progress: " + i + "\t write: " + total);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (bw != null) {
+				bw.close();
+			}
+			DBUtils.closeAll(conn, stmt, rs);
+		}
+	}
+	
+	public void dumpReview(DumpFilter filter, String outputPath, int printProgressEvery) throws Exception{
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		BufferedWriter bw = null;
+
+		try {
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputPath), "UTF8"));
+			conn = PoolManager.getConnection();
+			stmt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+			stmt.setFetchSize(Integer.MIN_VALUE);
+
+			rs = stmt.executeQuery("select page_id, page_url, rv_id, content from review_content as rc join review_status as rs on  rc.page_id=rs.page_id");
+			Gson gson = new Gson();
+			int i = 0;
+			JsonParser parser=new JsonParser();
+			int total = 0;
+			while (rs.next()) {
+				i++;
+				if (i % printProgressEvery == 0) {
+					logger.info("progress: " + i + "\t write: " + total);
+				}
+				String rc=rs.getString(4);
+				try{
+					JsonObject jo=parser.parse(rc).getAsJsonObject();
+					int pid=rs.getInt(1);
+					String url=rs.getString(2);
+					if (!filter.accept(-1, url, -1, null, null))
+						continue;
+					total++;
+					jo.addProperty("#pid#", pid);
+					jo.addProperty("#url#", url);
+					bw.write(gson.toJson(jo) + "\n");
+				}catch(Exception e){
+					logger.warn(e.getMessage());
+				}
+				
 			}
 			logger.info("progress: " + i + "\t write: " + total);
 		} catch (Exception e) {
