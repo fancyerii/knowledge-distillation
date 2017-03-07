@@ -24,8 +24,17 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ArticleSearcher {
     protected static Logger logger = Logger.getLogger(ArticleSearcher.class);
@@ -138,32 +147,47 @@ public class ArticleSearcher {
         sr.setTotalResult(searchResponse.getHits().totalHits());
         return sr;
     }
-    public SearchResult rangesearch(String startDate, String endDate, int pageNo){
+    public SearchResult rangesearch(String startDateStr, String endDateStr, int pageNo){
         // Default format: YY-MM-DD
-        if (startDate.isEmpty())
-            return SearchResult.EMPTY;
         if (pageNo < 1 || pageNo > 1000) pageNo = 1;
 
-        // append 00:00:00 to the date string
-        // the format defined in es is YY-MM-DD HH:MM:SS, see ifeng_es/scripts/mapping.json for detail
-        startDate += " 00:00:00";
-
-        // if endDate is empty, search range is [startDate, startDate + 1)
-        // else, search range is [startDate, endDate + 1)
-        if (endDate.isEmpty()){
-            endDate = getTomorrow(startDate);
-        } else {
-            endDate += " 00:00:00";
-            endDate = getTomorrow(endDate);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date start, end;
+        if (startDateStr.isEmpty()){
+            logger.error("startDateStr is empty!");
+            return SearchResult.EMPTY;
         }
-        System.out.println(startDate + '~' + endDate);
+        else{
+            try{
+                start = sdf.parse(startDateStr);
+            } catch (ParseException e){
+                logger.error("Error parse startDateStr: " + startDateStr);
+                return SearchResult.EMPTY;
+            }
+        }
+
+        if (endDateStr.isEmpty()) {
+            end = Calendar.getInstance().getTime();
+            logger.info("endDateStr is empty!");
+        }
+        else {
+            try{
+                end = sdf.parse(endDateStr);
+                end = getTomorrow(end);
+            } catch (ParseException e){
+                logger.error("Error parse endDateStr: " + endDateStr);
+                return SearchResult.EMPTY;
+            }
+        }
+        String starttime = DateFormat(start), endtime = DateFormat(end);
+        logger.info("start: " + starttime + ", end:" + endtime);
         SearchRequestBuilder srb = client.prepareSearch(Constants.indexName).setTypes(Constants.TYPE_ARTICLE);
-        RangeQueryBuilder qb = new RangeQueryBuilder("pubTime").from(startDate).to(endDate);
+        RangeQueryBuilder qb = new RangeQueryBuilder("pubTime").from(starttime).to(endtime);
         //System.out.println(bqb.toString());
         srb.addSort("pubTime", SortOrder.DESC);
         srb.setQuery(qb);
-        srb.setFrom((pageNo - 1) * 20);
-        srb.setSize(20);
+        srb.setFrom((pageNo - 1) * 100);
+        srb.setSize(100);
 
         // add source and main-image
         srb.addFields(new String[]{"title", "url", "pubTime"});
@@ -203,21 +227,17 @@ public class ArticleSearcher {
         return sr;
     }
 
-    private String getTomorrow(String datestr){
-        // append 00:00:00 to datestr
+    private Date getTomorrow(Date date){
         Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date curdate = null;
-        try {
-            curdate = sdf.parse(datestr);
-        } catch (Exception e){
-            logger.error(e.getMessage());
-        }
-        cal.setTime(curdate);
-        cal.set(cal.DATE, cal.get(cal.DATE) + 1);
-        return sdf.format(cal.getTime());
+        cal.setTime(date);
+        cal.set(Calendar.DATE, cal.get(Calendar.DATE) + 1);
+        return cal.getTime();
     }
 
+    private String DateFormat(Date date){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(date);
+    }
     private String highlightTitle(String title, List<String> words, String startTag, String endTag) {
         Set<String> searchWords = new HashSet<>();
         for (String word : words) {

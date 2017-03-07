@@ -42,7 +42,7 @@ public class RangeSearch extends HttpServlet {
         String end = request.getParameter("end");
 
         if (end == null || end.trim().equals("")) {
-            end = start;
+            end = "";
         }
 
         int pageNo = 1;
