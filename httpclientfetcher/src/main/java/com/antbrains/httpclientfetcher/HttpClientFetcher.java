@@ -1,6 +1,7 @@
 package com.antbrains.httpclientfetcher;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +41,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -169,6 +171,12 @@ public class HttpClientFetcher implements Closeable {
 	private boolean keepAlive = true;
 	private long defaultKeepAlive = 3000;
 	private int dnsCacheSize = 100000;
+	
+	private File dnsFile;
+
+	public void setDnsFile(File dnsFile) {
+		this.dnsFile = dnsFile;
+	}
 
 	public int getDnsCacheSize() {
 		return dnsCacheSize;
@@ -286,11 +294,15 @@ public class HttpClientFetcher implements Closeable {
 
 		ConnectionKeepAliveStrategy myStrategy = null;
 		HttpClientConnectionManager connManager = null;
+		DnsResolver dnsResolover=null;
+		if(this.dnsFile!=null && dnsFile.exists() && dnsFile.isFile()){
+			dnsResolover=new FileLookupDnsResolver(dnsFile);
+		}
 		if (this.keepAlive) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.getSocketFactory())
 					.register("https", SSLConnectionSocketFactory.getSocketFactory()).build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null);
+			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, dnsResolover);
 
 			((PoolingHttpClientConnectionManager) connManager).setMaxTotal(this.getMaxTotalConnection());
 			((PoolingHttpClientConnectionManager) connManager).setDefaultMaxPerRoute(this.getMaxConnectionPerRoute());
@@ -319,7 +331,7 @@ public class HttpClientFetcher implements Closeable {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.getSocketFactory())
 					.register("https", SSLConnectionSocketFactory.getSocketFactory()).build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null);
+			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, dnsResolover);
 
 			((PoolingHttpClientConnectionManager) connManager).setMaxTotal(this.getMaxTotalConnection());
 			((PoolingHttpClientConnectionManager) connManager).setDefaultMaxPerRoute(this.getMaxConnectionPerRoute());
@@ -331,7 +343,7 @@ public class HttpClientFetcher implements Closeable {
 				}
 			});
 		}
-
+		
 		if (this.routePlanner != null) {
 			if (this.proxy != null) {
 				logger.warn("proxy is set so routePlanner is useless");
