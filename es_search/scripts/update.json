@@ -1,0 +1,11 @@
+{
+  "article": {
+    "properties": {
+      "events": {
+        "type": "string",
+        "index": "not_analyzed",
+        "store": true
+      }
+    }
+  }
+}

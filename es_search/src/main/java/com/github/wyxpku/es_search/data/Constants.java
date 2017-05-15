@@ -22,4 +22,5 @@ public class Constants {
     public static final String PROPERTY_COMMENTS="comments";
     public static final String PROPERTY_MAIN_IMAGE="mainImage";
     public static final String PROPERTY_IMGS="imgs";
+    public static final String PROPERTY_EVENTS="events";
 }

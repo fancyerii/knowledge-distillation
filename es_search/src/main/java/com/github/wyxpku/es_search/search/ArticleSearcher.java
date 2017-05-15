@@ -18,23 +18,17 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.Calendar;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 public class ArticleSearcher {
     protected static Logger logger = Logger.getLogger(ArticleSearcher.class);
@@ -313,6 +307,31 @@ public class ArticleSearcher {
         return sb.toString();
     }
 
+
+    public void addEvent(String url){
+            SearchRequestBuilder srb = client.prepareSearch(Constants.indexName).setTypes(Constants.TYPE_ARTICLE);
+            TermQueryBuilder tqb = QueryBuilders.termQuery(Constants.PROPERTY_URL, url);
+            srb.setQuery(tqb);
+            srb.addFields(new String[]{Constants.PROPERTY_TITLE, Constants.PROPERTY_URL});
+            SearchResponse searchResponse = srb.execute().actionGet();
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            System.out.println("Hits num:" + hits.length);
+            for (SearchHit hit : hits) {
+                String title = hit.getFields().get(Constants.PROPERTY_TITLE).getValue();
+                String curl = hit.getFields().get(Constants.PROPERTY_URL).getValue();
+                try{
+                    List<Object> tags = hit.getFields().get(Constants.PROPERTY_TAGS).getValues();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                System.out.println(title);
+                System.out.println(curl);
+                System.out.println(hit.getSource());
+            }
+    }
+    public void removeEvent(String url){
+
+    }
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
             System.out.println("need 2 args: clusterName hostName");
@@ -322,10 +341,9 @@ public class ArticleSearcher {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in, "UTF8"));
         String line;
         System.out.println("Enter query");
-        Gson gson = new Gson();
+//        Gson gson = new Gson();
         while ((line = br.readLine()) != null) {
-            SearchResult sr = searcher.search(line, 5.0f, 1, "<font color='red'>", "</font>");
-            System.out.println(gson.toJson(sr));
+            searcher.addEvent(line);
         }
     }
 }
