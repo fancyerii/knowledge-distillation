@@ -245,7 +245,7 @@ public class HttpClientFetcher implements Closeable {
 	}
 
 	private String userAgent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)";
-
+	//private String userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0";
 	public String getUserAgent() {
 		return userAgent;
 	}
@@ -595,56 +595,81 @@ public class HttpClientFetcher implements Closeable {
 			ht.get = null;
 		}
 	}
+	
+	public String[] httpGetReturnRedirect(final String url, int retry) throws Exception{
+	    return httpGetReturnRedirect(url, retry, null);
+	}
 
-	public String[] httpGetReturnRedirect(final String url, int retry) throws Exception {
+	public String[] httpGetReturnRedirect(final String url, int retry, String encoding) throws Exception {
 		for (int i = 0; i < retry; i++) {
-			String[] arr = this.httpGetReturnRedirect(url);
+			String[] arr = this.httpGetReturnRedirect(url, encoding);
 			if (arr != null)
 				return arr;
 		}
 
 		return null;
 	}
-
+	
+	
+	
 	public Object[] httpGetReturnRedirectAndCode(final String url) throws Exception {
+	    return httpGetReturnRedirectAndCode(url, null);
+	}
+	
+	private ResponseHandler<Object[]> buildResponseHandler(final String url, final String encoding){
+	       return new ResponseHandler<Object[]>() {
+
+	            public Object[] handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
+	                int status = response.getStatusLine().getStatusCode();
+	                if (status >= 200 && status < 300) {
+	                    HttpEntity entity = response.getEntity();
+	                    if (entity == null)
+	                        return null;
+	                    if (entity.getContentLength() > HttpClientFetcher.this.maxContentLength) {
+	                        throw new RuntimeException("too large content: " + url);
+	                    }
+	                    if(encoding==null){
+	                        byte[] bytes = toByteArray(entity);
+	                        ContentType contentType = ContentType.get(entity);
+	                        if (contentType != null) {
+	                            Charset charset = contentType.getCharset();
+	                            if (charset != null) {
+	                                return new Object[] { status, new String(bytes, charset), null };
+	                            }
+	                        }
+	                        String charSet = CharsetDetector.getCharset(bytes);
+	                        return new Object[] { status, new String(bytes, charSet), null };
+	                    }else{
+	                        byte[] bytes = toByteArray(entity);
+	                        return new Object[] { status, new String(bytes, encoding), null };
+	                    }
+
+	                    
+	                } else {
+	                    return new Object[] { status, null, null };
+	                }
+	            }
+
+	        };
+
+	}
+
+	public Object[] httpGetReturnRedirectAndCode(final String url, final String encoding) throws Exception {
 		if (!isValid)
 			throw new RuntimeException("not valid now, you should init first");
 		HttpGet httpget = new HttpGet(url);
 
 		// Create a custom response handler
-		ResponseHandler<Object[]> responseHandler = new ResponseHandler<Object[]>() {
-
-			public Object[] handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
-				int status = response.getStatusLine().getStatusCode();
-				if (status >= 200 && status < 300) {
-					HttpEntity entity = response.getEntity();
-					if (entity == null)
-						return null;
-					if (entity.getContentLength() > HttpClientFetcher.this.maxContentLength) {
-						throw new RuntimeException("too large content: " + url);
-					}
-					byte[] bytes = toByteArray(entity);
-					ContentType contentType = ContentType.get(entity);
-					if (contentType != null) {
-						Charset charset = contentType.getCharset();
-						if (charset != null) {
-							return new Object[] { status, new String(bytes, charset), null };
-						}
-					}
-					String charSet = CharsetDetector.getCharset(bytes);
-
-					return new Object[] { status, new String(bytes, charSet), null };
-				} else {
-					return new Object[] { status, null, null };
-				}
-			}
-
-		};
+		ResponseHandler<Object[]> responseHandler = this.buildResponseHandler(url, encoding);
 
 		return this.doExecuteAndReturnRedirectCode(httpget, responseHandler);
 	}
 	
-	public String[] httpGetReturnRedirect(final String url) throws Exception {
+	public String[] httpGetReturnRedirect(final String url) throws Exception{
+	    return httpGetReturnRedirect(url, null);
+	}
+	
+	public String[] httpGetReturnRedirect(final String url, final String encoding) throws Exception {
 		if (!isValid)
 			throw new RuntimeException("not valid now, you should init first");
 		HttpGet httpget = new HttpGet(url);
@@ -662,16 +687,20 @@ public class HttpClientFetcher implements Closeable {
 						throw new RuntimeException("too large content: " + url);
 					}
 					byte[] bytes = toByteArray(entity);
-					ContentType contentType = ContentType.get(entity);
-					if (contentType != null) {
-						Charset charset = contentType.getCharset();
-						if (charset != null) {
-							return new String(bytes, charset);
-						}
+					if(encoding==null){
+    					ContentType contentType = ContentType.get(entity);
+    					if (contentType != null) {
+    						Charset charset = contentType.getCharset();
+    						if (charset != null) {
+    							return new String(bytes, charset);
+    						}
+    					}
+    					String charSet = CharsetDetector.getCharset(bytes);
+    
+    					return new String(bytes, charSet);
+					}else{
+					    return new String(bytes, encoding);
 					}
-					String charSet = CharsetDetector.getCharset(bytes);
-
-					return new String(bytes, charSet);
 				} else {
 					throw new BadResponseException("", status);
 				}

@@ -8,6 +8,7 @@ public class TestDns {
 	public static void main(String[] args) throws Exception{
 		HttpClientFetcher fetcher=new HttpClientFetcher("");
 		fetcher.setDnsFile(new File("/home/mc/dnsFile"));
+		fetcher.setKeepAlive(false);
 		fetcher.init();
 		String word = "色差计";
 
