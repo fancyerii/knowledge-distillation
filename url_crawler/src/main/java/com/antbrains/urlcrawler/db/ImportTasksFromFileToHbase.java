@@ -15,8 +15,8 @@ import org.apache.log4j.Logger;
 public class ImportTasksFromFileToHbase {
 	protected static Logger logger=Logger.getLogger(ImportTasksFromFileToHbase.class);
 	public static void main(String[] args)  throws Exception{
-		if(args.length!=2){
-			System.err.println("need 2 arg: urlFile zk");
+		if(args.length!=3){
+			System.err.println("need 3 arg: urlFile zk dbName");
 			System.exit(-1);
 		}
 		Configuration myConf = HBaseConfiguration.create();
@@ -27,22 +27,19 @@ public class ImportTasksFromFileToHbase {
 		String line;
 		int lineNumber=0; 
 		ArrayList<String> tasks=new ArrayList<>();
-		String dbName="baiduzhidao";
+		String dbName=args[2];
 		while((line=br.readLine())!=null){
-
-			if(line.startsWith("http://wapiknow.baidu.com/")){
-				lineNumber++;
-				if(lineNumber%10000==0){
-					logger.info("lineNumber: "+lineNumber);
-				}
-				String url=line.replace("wapiknow", "zhidao");
-				
-				tasks.add(url);
-				if(tasks.size()>1000){
-					HbaseTool.addRows(dbName, HbaseTool.TB_URLDB_UNCRAWLED, conn, tasks);
-					tasks.clear();
-				}
-			}
+            lineNumber++;
+            if(lineNumber%10000==0){
+                logger.info("lineNumber: "+lineNumber);
+            }
+            line=line.trim();
+            if(line.isEmpty()) continue;
+            tasks.add(line);
+            if(tasks.size()>1000){
+                HbaseTool.addRows(dbName, HbaseTool.TB_URLDB_UNCRAWLED, conn, tasks);
+                tasks.clear();
+            }
 		}
 		if(tasks.size()>0){
 			HbaseTool.addRows(dbName, HbaseTool.TB_URLDB_UNCRAWLED, conn, tasks);

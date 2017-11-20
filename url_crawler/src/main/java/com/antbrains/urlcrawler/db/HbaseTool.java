@@ -105,7 +105,9 @@ public class HbaseTool {
 			}
 			table.delete(dels);
 		}finally{
-			table.close();
+		    if(table!=null){
+		        table.close();
+		    }
 		}
 	}
 	
@@ -134,7 +136,7 @@ public class HbaseTool {
 				String url=Bytes.toString(bytes);
 				CrawlTask task=new CrawlTask();
 				result.add(task);
-				task.url=url;
+				task.crawlUrl=url;
 				task.status=CrawlTask.STATUS_FAILED;
 				
 				bytes=r.getValue(CF_BT, COL_URLDB_FAIL_COUNT_BT);
@@ -163,7 +165,7 @@ public class HbaseTool {
 			table=conn.getTable(TableName.valueOf(dbName+TB_URLDB_FAIL));
 			ArrayList<Put> puts=new ArrayList<>(tasks.size());
 			for(CrawlTask task:tasks){ 
-				String url=task.url;
+				String url=task.crawlUrl;
 				byte[]	key=DigestUtils.md5(url);
 				Put put=new Put(key);
 				put.addColumn(CF_BT, COL_URLDB_URL_BT, Bytes.toBytes(url));
@@ -173,7 +175,9 @@ public class HbaseTool {
 			}
 			table.put(puts);
 		}finally{
-			table.close();
+		    if(table!=null){
+		        table.close();
+		    }
 		}
 	}
 	
@@ -190,7 +194,9 @@ public class HbaseTool {
 			}
 			table.put(puts);
 		}finally{
-			table.close();
+		    if(table!=null){
+		        table.close();
+		    }
 		}
 	}
 	
@@ -201,9 +207,12 @@ public class HbaseTool {
 			ArrayList<Put> puts=new ArrayList<>(tasks.size());
 			for(CrawlTask task:tasks){
 				if(task.status!=CrawlTask.STATUS_SUCC) continue;
-				String url=task.url;
-				String json=task.otherInfo;
-				byte[]	key=DigestUtils.md5(url);
+				if(task.pk==null){
+				    task.pk=task.crawlUrl;
+				}
+				String url=task.crawlUrl;
+				String json=task.json;
+				byte[]	key=DigestUtils.md5(task.pk);
 				Put put=new Put(key);
 				put.addColumn(CF_BT, COL_WEBPAGE_URL_BT, Bytes.toBytes(url));
 				put.addColumn(CF_BT, COL_WEBPAGE_JSON_BT, Bytes.toBytes(json));
@@ -211,40 +220,47 @@ public class HbaseTool {
 			}
 			table.put(puts);
 		}finally{
-			table.close();
+		    if(table!=null){
+		        table.close();
+		    }
 		}
 	}
 	
-	public static void updateWebPage(String dbName, Connection conn, String url, String json) throws IOException{
+	public static void updateWebPage(String dbName, Connection conn, String pk, String url, String json) throws IOException{
 		Table table=null;
 		try{
 			table=conn.getTable(TableName.valueOf(dbName+TB_WEBPAGE));
-			byte[]	key=DigestUtils.md5(url);
+			if(pk==null) pk=url;
+			byte[]	key=DigestUtils.md5(pk);
 			Put put=new Put(key);
 			put.addColumn(CF_BT, COL_WEBPAGE_URL_BT, Bytes.toBytes(url));
 			put.addColumn(CF_BT, COL_WEBPAGE_JSON_BT, Bytes.toBytes(json));
 			table.put(put);
 		}finally{
-			table.close();
+		    if(table!=null){
+		        table.close();
+		    }
 		}
 	}
 	
-	public static String getＷebPage(String dbName, Connection conn, String url) throws IOException{
+	public static String getJson(String dbName, Connection conn, String pk) throws IOException{
 		Table table=null;
 		try{
 			table=conn.getTable(TableName.valueOf(dbName+TB_WEBPAGE));
-			byte[]	key=DigestUtils.md5(url);
+			byte[]	key=DigestUtils.md5(pk);
 			Get get=new Get(key);
 			Result r=table.get(get);
 
 			if (r.isEmpty())
 				return null;
 
-			byte[] bytes = r.getValue(CF_BT, COL_WEBPAGE_URL_BT);
+			byte[] bytes = r.getValue(CF_BT, COL_WEBPAGE_JSON_BT);
 			if(bytes==null) return null;
 			return Bytes.toString(bytes);
 		}finally{
-			table.close();
+		    if(table!=null){
+		        table.close();
+		    }
 		}
 	}
 	

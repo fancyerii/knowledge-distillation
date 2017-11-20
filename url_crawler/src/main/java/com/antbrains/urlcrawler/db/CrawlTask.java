@@ -10,27 +10,29 @@ public class CrawlTask {
 	
 	public static final String FAIL_REASON_NETWORK="network";
 	
-	public String url;
+	public String pk;
+	public String crawlUrl;
 	public int failCount;
 	public String failReason;
 	public int status;
 	public Date lastUpdate;
 	
-	public String otherInfo;
+	public String json;
 	
 	@Override
 	public String toString(){
-		return url+"\tfailCount: "+failCount+"\tfailReason: "+failReason+"\tstatus: "+status;
+		return crawlUrl+"\tfailCount: "+failCount+"\tfailReason: "+failReason+"\tstatus: "+status;
 	}
 	
 	public CrawlTask copy(){
 		CrawlTask task=new CrawlTask();
-		task.url=url;
+		task.pk=pk;
+		task.crawlUrl=crawlUrl;
 		task.failCount=failCount;
 		task.failReason=failReason;
 		task.status=status;
 		task.lastUpdate=(Date) lastUpdate.clone();
-		task.otherInfo=otherInfo;
+		task.json=json;
 		return task;
 	}
 }

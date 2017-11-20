@@ -81,11 +81,11 @@ public class Writer extends Thread {
 			ArrayList<CrawlTask> fail=new ArrayList<>();
 			ArrayList<String> all=new ArrayList<>();
 			for(CrawlTask task:cache){
-				all.add(task.url);
+				all.add(task.crawlUrl);
 				if(task.status==CrawlTask.STATUS_FAILED){
 					fail.add(task);
 				}else if(task.status==CrawlTask.STATUS_SUCC){
-					succ.add(task.url);
+					succ.add(task.crawlUrl);
 				}else{
 					logger.warn("algo bug: "+task);
 				}
@@ -93,9 +93,7 @@ public class Writer extends Thread {
 			HbaseTool.addRows(dbName, HbaseTool.TB_URLDB_SUCC, hbaseConn, succ);
 			HbaseTool.addFailed(dbName, hbaseConn, fail);
 			HbaseTool.delRows(dbName, HbaseTool.TB_URLDB_CRAWLING, hbaseConn, all);
-			//PhoenixTool.upsertTasks(phoenixConn, cache);
 		} catch (Exception e) {
-			//logger.error(e.getMessage(), e);
 			logger.error(e.getMessage());
 		}
 		// update mysql status

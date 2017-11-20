@@ -29,9 +29,9 @@ public class Driver{
 		
 		CommandLine line = parser.parse(options, args);
 		HelpFormatter formatter = new HelpFormatter();
-		String helpStr = "Driver fetcherNumber zkQuorum stopPort dbName conAddr jmxUrl";
+		String helpStr = "Driver fetcherNumber zkQuorum stopPort dbName conAddr jmxUrl faeClass";
 		args = line.getArgs();
-		if (args.length !=6) {
+		if (args.length !=7) {
 			formatter.printHelp(helpStr, options);
 			System.exit(-1);
 		}
@@ -60,7 +60,7 @@ public class Driver{
 		String dbName=args[3];
 		String conAddr=args[4];
 		String jmxUrl=args[5];
-		
+		String faeClass=args[6];
 		//print command args
 		logger.info("workerNumber: "+workerNumber);
 		logger.info("zkQuorum: "+zkQuorum);
@@ -68,6 +68,8 @@ public class Driver{
 		logger.info("dbName: "+dbName);
 		logger.info("conAddr: "+conAddr);
 		logger.info("jmxUrl: "+jmxUrl);
+		logger.info("faeClass: "+faeClass);
+        
 		
 		//print options
 		logger.info("taskQueueSize: "+taskQueueSize);
@@ -75,7 +77,6 @@ public class Driver{
 		logger.info("producerBatchSize: "+producerBatchSize);
 		logger.info("zkPort: "+zkPort);
 		
-		//PoolManager.StartPool("conf", "baiduzhidao");
 		
 		BlockingQueue<CrawlTask> taskQueue=new ArrayBlockingQueue<>(taskQueueSize);
 		BlockingQueue<CrawlTask> resQueue=new ArrayBlockingQueue<>(resQueueSize);
@@ -87,8 +88,10 @@ public class Driver{
 		HttpClientFetcher fetcher=new HttpClientFetcher(Driver.class.getSimpleName());
 		
 		fetcher.init();
+		Class cls=Class.forName(faeClass);
+		FetcherAndExtractor fae=(FetcherAndExtractor) cls.newInstance();
 		for(int i=0;i<workers.length;i++){
-			workers[i]=new Fetcher(fetcher, taskQueue, resQueue);
+			workers[i]=new Fetcher(fetcher, taskQueue, resQueue, fae);
 			workers[i].start();
 		}
 		

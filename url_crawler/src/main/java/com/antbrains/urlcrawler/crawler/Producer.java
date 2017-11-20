@@ -79,7 +79,7 @@ public class Producer extends Thread{
 	private List<String> getUrls(List<CrawlTask> tasks){
 		ArrayList<String> urls=new ArrayList<>(tasks.size());
 		for(CrawlTask task:tasks){
-			urls.add(task.url);
+			urls.add(task.crawlUrl);
 		}
 		return urls;
 	}
@@ -119,7 +119,7 @@ public class Producer extends Thread{
 					tasks=new ArrayList<>(urls.size());
 					for(String url:urls){
 						CrawlTask task=new CrawlTask();
-						task.url=url;
+						task.crawlUrl=url;
 						tasks.add(task);
 					}
 					if(urls.size()<batchSize){
@@ -157,7 +157,7 @@ public class Producer extends Thread{
 						tasks=new ArrayList<>(urls.size());
 						for(String url:urls){
 							CrawlTask task=new CrawlTask();
-							task.url=url;
+							task.crawlUrl=url;
 							task.status=CrawlTask.STATUS_NOT_CRAWLED;
 							tasks.add(task);
 						}

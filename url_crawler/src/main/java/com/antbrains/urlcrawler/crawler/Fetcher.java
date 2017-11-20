@@ -15,11 +15,13 @@ public class Fetcher extends Thread{
 	HttpClientFetcher fetcher;
 	BlockingQueue<CrawlTask> taskQueue;
 	BlockingQueue<CrawlTask> resultQueue; 
+	FetcherAndExtractor fae;
 	public Fetcher(HttpClientFetcher fetcher, BlockingQueue<CrawlTask> taskQueue,
-			BlockingQueue<CrawlTask> resultQueue){
+			BlockingQueue<CrawlTask> resultQueue, FetcherAndExtractor fae){
 		this.fetcher=fetcher;
 		this.taskQueue=taskQueue;
 		this.resultQueue=resultQueue; 
+		this.fae=fae;
 	}
 	
 	private volatile boolean bStop;
@@ -40,28 +42,11 @@ public class Fetcher extends Thread{
 		}
 		
 	}
-	
-	private String getHtml(String url){
-		try {
-			return fetcher.httpGet(url, 3);
-		} catch (Exception e) {
-		}
-		return null;
-	}
+
 	private Gson gson=new Gson();
 	private void doWork(CrawlTask task){
-		String html=getHtml(task.url);
-		if(html==null){
-			logger.warn("getFail: "+task.url);
-			task.failCount++;
-			task.status=CrawlTask.STATUS_FAILED;
-			task.failReason=CrawlTask.FAIL_REASON_NETWORK;
-		}else{
-			task.status=CrawlTask.STATUS_SUCC;
-			HashMap<String,String> map=new HashMap<>(1);
-			map.put("html", html);
-			task.otherInfo=gson.toJson(map);
-		}
+	    fae.processTask(fetcher, task);
+	    
 		try {
 			this.resultQueue.put(task);
 		} catch (InterruptedException e) {
