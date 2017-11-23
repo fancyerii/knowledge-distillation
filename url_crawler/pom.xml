@@ -4,7 +4,7 @@
 	<groupId>com.github.fancyerii</groupId>
 	<artifactId>url_crawler</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1.1</version>
+	<version>1.1.4</version>
 	<name>url crawler</name> 
 	<description>url crawler</description>
 

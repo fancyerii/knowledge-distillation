@@ -1,8 +1,10 @@
 package com.antbrains.urlcrawler.crawler;
 
+import java.util.List;
+
 import com.antbrains.httpclientfetcher.HttpClientFetcher;
 import com.antbrains.urlcrawler.db.CrawlTask;
 
 public interface FetcherAndExtractor {
-    public void processTask(HttpClientFetcher fetcher, CrawlTask task);
+    public List<CrawlTask> processTask(HttpClientFetcher fetcher, CrawlTask task);
 }

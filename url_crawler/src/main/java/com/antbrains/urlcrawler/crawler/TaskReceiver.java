@@ -47,6 +47,7 @@ public class TaskReceiver extends Thread{
 			try{
 				String s = QueueTools.receive(receiver, 5000);
 				if(s==null) continue;
+				
 				CrawlTask ct = gson.fromJson(s, CrawlTask.class);
 				this.taskQueue.put(ct);
 			}catch(Exception e){

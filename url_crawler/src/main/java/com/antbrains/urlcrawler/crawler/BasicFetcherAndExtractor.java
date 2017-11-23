@@ -1,6 +1,7 @@
 package com.antbrains.urlcrawler.crawler;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -19,7 +20,7 @@ public class BasicFetcherAndExtractor implements FetcherAndExtractor{
         return null;
     }
     @Override
-    public void processTask(HttpClientFetcher fetcher, CrawlTask task) {
+    public List<CrawlTask> processTask(HttpClientFetcher fetcher, CrawlTask task) {
         String html=getHtml(fetcher, task.crawlUrl);
         if(html==null){
             logger.warn("getFail: "+task.crawlUrl);
@@ -32,6 +33,7 @@ public class BasicFetcherAndExtractor implements FetcherAndExtractor{
             map.put("html", html);
             task.json=gson.toJson(map);
         }
+        return null;
     }
 
 }

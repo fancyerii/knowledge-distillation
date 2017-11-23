@@ -174,6 +174,7 @@ public class Producer extends Thread{
 					this.failCount=0;
 					//ArrayList<CrawlTask> updatedTasks=new ArrayList<>();
 					for(CrawlTask task:tasks){
+					    logger.debug("task: "+task.crawlUrl);
 						String s=gson.toJson(task);
 						boolean res=QueueTools.send(sender, s);
 						if(!res){

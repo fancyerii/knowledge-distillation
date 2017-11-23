@@ -1,6 +1,7 @@
 package com.antbrains.urlcrawler.crawler;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -36,20 +37,30 @@ public class Fetcher extends Thread{
 			try {
 				task = this.taskQueue.poll(3, TimeUnit.SECONDS);
 				if(task==null) continue;
-				this.doWork(task);
+				logger.debug("task: "+task.crawlUrl);
+				this.doWork(task, 0);
 			} catch (InterruptedException e) {
 			}
 		}
 		
 	}
 
-	private Gson gson=new Gson();
-	private void doWork(CrawlTask task){
-	    fae.processTask(fetcher, task);
-	    
+	private void doWork(CrawlTask task, int depth){
+	    if(depth>=2){
+	        logger.warn("depth="+depth);
+	        task.status=CrawlTask.STATUS_FAILED;
+	        task.failReason="depth>=2";
+	        return;
+	    }
+	    List<CrawlTask> newTasks=fae.processTask(fetcher, task);
 		try {
 			this.resultQueue.put(task);
 		} catch (InterruptedException e) {
+		}
+		if(newTasks!=null){
+		    for(CrawlTask newTask:newTasks){
+		        doWork(newTask, depth+1);
+		    }
 		}
 	}
 	

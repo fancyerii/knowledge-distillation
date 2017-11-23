@@ -348,8 +348,8 @@ public class HbaseTool {
 				zkPort = line.getOptionValue("port");
 			}
 			if (line.hasOption("d")) {
-				if (line.getOptionValue("d").equalsIgnoreCase("false")) {
-					deleteExist = false;
+				if (line.getOptionValue("d").equalsIgnoreCase("true")) {
+					deleteExist = true;
 				}
 			}
 
