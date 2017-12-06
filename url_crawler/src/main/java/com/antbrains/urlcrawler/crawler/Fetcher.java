@@ -32,6 +32,7 @@ public class Fetcher extends Thread{
 	
 	@Override
 	public void run(){
+	    logger.info("Fetcher start");
 		while(!bStop){
 			CrawlTask task;
 			try {
@@ -42,7 +43,7 @@ public class Fetcher extends Thread{
 			} catch (InterruptedException e) {
 			}
 		}
-		
+		logger.info("Fetcher finish");
 	}
 
 	private void doWork(CrawlTask task, int depth){
