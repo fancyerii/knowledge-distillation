@@ -6,4 +6,4 @@ else
 fi
 find queuedata -type f -exec rm {} \;
 
-java -Dlog4j.configuration=log4j-sche.properties -cp ".:./ifeng_crawler-1.0-jar-with-dependencies.jar" com.antbrains.ifengcrawler.scheduler.SchedulerDriver --maxEntriesLocalHeap 1000000 --batchSize 1000 --maxQueueSize 50000  "jnp://ai-dev:1099" ai-dev:3333 ifeng queuedata 22345 &
+java -Dlog4j.configuration=log4j-sche.properties -cp ".:./ifeng_crawler-1.0-jar-with-dependencies.jar" com.antbrains.ifengcrawler.scheduler.SchedulerDriver --maxEntriesLocalHeap 1000000 --batchSize 1000 --maxQueueSize 50000  "jnp://localhost:1099" localhost:3333 ifeng queuedata 22345 &

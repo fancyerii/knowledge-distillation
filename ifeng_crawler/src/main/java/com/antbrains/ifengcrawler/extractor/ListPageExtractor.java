@@ -30,9 +30,9 @@ import com.antbrains.sc.tools.batchcrawler.CrawlPageInterface;
 
 public class ListPageExtractor extends IfengBasicInfoExtractor {
 	protected static Logger logger = Logger.getLogger(ListPageExtractor.class);
-	public static int maxPage=1000;
-	public static String pubTimeBound="2015-01-01";
-	public static int maxCrawlThread=3;
+	public static int maxPage=20;
+	public static String pubTimeBound="2018-01-01";
+	public static int maxCrawlThread=1;
 	
 	private CrawlPageInterface cpi=new BasicCrawlPage(3);
 	@Override
@@ -93,9 +93,19 @@ public class ListPageExtractor extends IfengBasicInfoExtractor {
 		}
 		
 		//process firstPage
+		boolean skip=false;
 		List<ListPageItem> allItems=this.extractItems(url, parser, archiver, taskId, content);
-		
-		for(int i=2;i<=maxPage;i+=maxCrawlThread){
+		if(timeBound!=null){
+			for(ListPageItem item:allItems){
+				if(item.getPubTime().compareTo(timeBound)<0){
+					logger.info("found old item so skip: "+item.toString());
+					skip=true;
+					break;
+				}
+			}
+		}
+		for(int i=2;!skip && i<=maxPage;i+=maxCrawlThread){
+			logger.info("crawl page "+i+" of "+url);
 			int startPage=i;
 			int endPage=Math.min(maxPage, i+maxCrawlThread);
 			List<String> batchUrls=new ArrayList<>(maxCrawlThread);
@@ -178,8 +188,8 @@ public class ListPageExtractor extends IfengBasicInfoExtractor {
 	public static void main(String[] args) {
 		String[] urls = new String[] { "http://fo.ifeng.com/listpage/8537/1/list.shtml", };
 		ListPageExtractor ext = new ListPageExtractor();
-		ext.pubTimeBound="2016-04-04";
-		ext.maxCrawlThread=6;
+		ext.pubTimeBound="2018-07-01";
+		ext.maxCrawlThread=1;
 		for (String url : urls) {
 			ext.testUrl(url);
 		}
