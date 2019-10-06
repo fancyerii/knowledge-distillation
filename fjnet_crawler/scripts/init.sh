@@ -1,0 +1,1 @@
+  java -Dlog4j.configuration=log4j-init.properties -cp ".:./fjnet_crawler-1.0-SNAPSHOT-jar-with-dependencies.jar" com.antbrains.fjnet_crawler.scheduler.Init  "jnp://10.26.161.20:1099" 10.26.161.20:3333 fjnet 15m 5m &

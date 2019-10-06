@@ -1,0 +1,1 @@
+  java -Dlog4j.configuration=log4j-init.properties -cp ".:./ifeng_crawler-1.0-jar-with-dependencies.jar" com.antbrains.chinabuddhism.scheduler.Init  "jnp://10.26.161.20:1099" 10.26.161.20:3333 chinabuddhism

@@ -1,0 +1,1 @@
+java  -Dlog4j.configuration=log4j-crawl.properties -cp ".:./ifeng_crawler-1.0-jar-with-dependencies.jar" com.antbrains.chinabuddhism.scheduler.CrawlerDriver --isUpdate true --stopPort 9220 --workerNum 10 "jnp://10.26.161.20:1099" 10.26.161.20:3333 chinabuddhism com.antbrains.chinabuddhism.extractor.ChinabuddhismExtractor queuedata &
